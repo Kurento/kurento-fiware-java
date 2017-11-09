@@ -1,5 +1,6 @@
 [![License badge](https://img.shields.io/badge/license-Apache2-orange.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Documentation badge](https://readthedocs.org/projects/fiware-orion/badge/?version=latest)](http://fiware-orion.readthedocs.io)
+
 [![Kurento logo][KurentoImage]][Kurento]
 
 Kurento FIWARE integration
