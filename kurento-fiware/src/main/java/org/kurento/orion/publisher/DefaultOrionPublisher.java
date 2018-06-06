@@ -19,6 +19,7 @@ package org.kurento.orion.publisher;
 import org.kurento.orion.connector.OrionConnector;
 import org.kurento.orion.connector.OrionConnectorConfiguration;
 import org.kurento.orion.connector.entities.OrionEntity;
+import org.kurento.orion.connector.entities.OrionResponse;
 
 public abstract class DefaultOrionPublisher<T, O extends OrionEntity> implements
 		OrionPublisher<T, O> {
@@ -39,9 +40,10 @@ public abstract class DefaultOrionPublisher<T, O extends OrionEntity> implements
 	 *            a T entity
 	 */
 	@Override
-	public void publish(T entity) {
+	public O publish(T entity) {
 		OrionEntity orionEntity = mapEntityToOrionEntity(entity);
 		orionConnector.createNewEntity(orionEntity, true);
+		return (O)orionEntity;
 	}
 
 	/**
@@ -51,10 +53,37 @@ public abstract class DefaultOrionPublisher<T, O extends OrionEntity> implements
 	 *            a O orionEntity
 	 */
 	@Override
-	public void publish(O orionEntity) {
+	public O publish(O orionEntity) {
 		orionConnector.createNewEntity(orionEntity, true);
+		return orionEntity;
 	}
-
+	
+	/**
+	 * Updates an existing entity in FIWARE. The
+	 * {@link #mapEntityToOrionEntity(T entity)} should be implemented to map
+	 * the entity to the output desired entity in FIWARE
+	 *
+	 * @param entity
+	 *            a T entity
+	 */
+	@Override
+	public void update (T entity) {
+		OrionEntity orionEntity = mapEntityToOrionEntity(entity);
+		orionConnector.updateEntity(orionEntity, true);
+	}
+	
+	/**
+	 * Updates an existing entity in FIWARE.
+	 *
+	 * @param orionEntity
+	 *            a O orionEntity
+	 */
+	@Override
+	public void update (O orionEntity) {
+		orionConnector.updateEntity(orionEntity, true);
+	}
+	
+	
 	/**
 	 * Given an object, maps to an appropriate output FIWARE object.
 	 *

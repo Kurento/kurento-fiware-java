@@ -63,7 +63,8 @@ public class VehicleDataModel implements OrionEntity {
 	public String getId() {
 		return id;
 	}
-
+	
+	@Override
 	public void setId(String id) {
 		this.id = id;
 	}
@@ -72,8 +73,9 @@ public class VehicleDataModel implements OrionEntity {
 	public String getType() {
 		return type;
 	}
-
-	private void setType(String type) {
+	
+	@Override
+	public void setType(String type) {
 		this.type = type;
 	}
 

@@ -18,7 +18,7 @@ package org.kurento.orion.connector;
 
 public class OrionConnectorConfiguration {
 
-	private String orionHost = "192.168.1.39";
+	private String orionHost = "localhost";
 	private int orionPort = 1026;
 	private String orionScheme = "http";
 	private String fiwareService = "";

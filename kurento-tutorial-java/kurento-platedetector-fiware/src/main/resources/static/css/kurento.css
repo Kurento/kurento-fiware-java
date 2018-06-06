@@ -52,3 +52,19 @@ video, #console {
 	width: 80px;
 	padding-top: 190px;
 }
+/*From here new css*/
+@media (min-width: 768px) {
+  .navbar-custom {
+    padding: 10 px 0;
+    -webkit-transition: padding 0.3s;
+    -moz-transition: padding 0.3s;
+    transition: padding 0.3s;
+  }
+  
+.navbar-custom {
+    background: #000000;
+    color: #9d9d9d;
+    font-family: "Montserrat", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    border: none;
+}

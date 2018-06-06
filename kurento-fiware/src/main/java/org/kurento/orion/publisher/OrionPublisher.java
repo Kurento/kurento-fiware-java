@@ -17,12 +17,17 @@
 package org.kurento.orion.publisher;
 
 import org.kurento.orion.connector.entities.OrionEntity;
+import org.kurento.orion.connector.entities.OrionResponse;
 
 public interface OrionPublisher<T, O extends OrionEntity> {
 
-	public void publish(T entity);
+	public O publish(T entity);
 
-	public void publish(O orionEntity);
+	public O publish(O orionEntity);
+	
+	public void update (T entity);
+	
+	public void update (O orionEntity);
 
 	public O mapEntityToOrionEntity(T entity);
 }
