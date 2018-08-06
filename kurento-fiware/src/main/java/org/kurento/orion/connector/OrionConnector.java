@@ -137,7 +137,7 @@ public abstract class OrionConnector <T extends OrionEntity> {
 	 *             the context broker at the given address, or obtaining the
 	 *             answer from it.
 	 */
-	public void createNewEntity(OrionEntity orionEntity) {
+	public void createNewEntity(T orionEntity) {
 		createEntity(orionEntity, false);
 	}
 
@@ -156,7 +156,7 @@ public abstract class OrionConnector <T extends OrionEntity> {
 	 *             the context broker at the given address, or obtaining the
 	 *             answer from it.
 	 */
-	public void createNewEntity(OrionEntity orionEntity, boolean keyValuesMode) {
+	public void createNewEntity(T orionEntity, boolean keyValuesMode) {
 		createEntity(orionEntity, keyValuesMode);
 	}
 
@@ -176,7 +176,7 @@ public abstract class OrionConnector <T extends OrionEntity> {
 	 *             the context broker at the given address, or obtaining the
 	 *             answer from it.
 	 */
-	public void createEntity(OrionEntity orionEntity, boolean keyValuesMode) {
+	public void createEntity(T orionEntity, boolean keyValuesMode) {
 
 		String uri = this.orionAddr.toString() + ENTITIES_PATH;
 		
@@ -204,7 +204,7 @@ public abstract class OrionConnector <T extends OrionEntity> {
 		
 		String uri = this.orionAddr.toString() + ENTITIES_PATH + "?type="+ type+"&limit=1&options=count";
 		
-		return  sendGetRequestVoidToOrion(null, uri, HttpStatus.SC_OK, true);
+		return  sendGetRequestCountToOrion(null, uri, HttpStatus.SC_OK, true);
 
 	}
 	
@@ -261,38 +261,40 @@ public abstract class OrionConnector <T extends OrionEntity> {
 				
 	}
 	
+	/**
+	 * Update an orion Entity setting KeyValuesMode to true
+	 * @param orionEntity
+	 * @throws OrionConnectorException
+	 *             if a communication exception happens, either when contacting
+	 *             the context broker at the given address, or obtaining the
+	 *             answer from it.
+	 */
+	public void updateEntity(T orionEntity) {
+		updateEntity(orionEntity, true);
+	}
 	
-	public void updateEntity(OrionEntity orionEntity, boolean KeyValuesMode) {
-//
-		/* OrionEntity updateEntity = orionEntity;
-		updateEntity.setId(null);
-		updateEntity.setType(null);
+	/**
+	 * Update an orion Entity 
+	 * @param orionEntity
+	 * @throws OrionConnectorException
+	 *             if a communication exception happens, either when contacting
+	 *             the context broker at the given address, or obtaining the
+	 *             answer from it.
+	 */
+	public void updateEntity(T orionEntity, boolean KeyValuesMode) {
+
+		//prepare uri
+		String uri = this.orionAddr.toString() + ENTITIES_PATH + "/"+orionEntity.getId()+"/attrs";
 		
-		String jsonEntity = gson.toJson(updateEntity);
-		log.debug("Send request to Orion: {}", jsonEntity);
-		
-		String uri = this.orionAddr.toString() + ENTITIES_PATH+"/"+orionEntity.getId()+"?type="+orionEntity.getType();
 		if (KeyValuesMode) {
-			uri += "&options=keyValues";
+			uri += "?options=keyValues";
 		}
-		Request req = Request.Patch(uri)
-				.addHeader("Content-Type", APPLICATION_JSON.getMimeType())
-				.bodyString(jsonEntity, APPLICATION_JSON).connectTimeout(5000)
-				.socketTimeout(5000);
-
-		if (this.config.getFiwareService() != null
-				&& !"".equalsIgnoreCase(this.config.getFiwareService())) {
-			req.addHeader("Fiware-Service", this.config.getFiwareService());
-		}
-		Response response;
-		try {
-			response = req.execute();
-		} catch (IOException e) {
-			throw new OrionConnectorException("Could not execute HTTP request", e);
-		}
-		HttpResponse httpResponse = checkResponse(response);
-
-		log.debug("Sent to Orion. Obtained response: {}", httpResponse);*/
+		
+		//prepare entity - only parameters to change
+		orionEntity.setId(null);
+		orionEntity.setType(null);
+		
+		sendPatchRequestVoidToOrion(orionEntity, uri, HttpStatus.SC_NO_CONTENT);
 
 	}
 	
@@ -321,8 +323,16 @@ public abstract class OrionConnector <T extends OrionEntity> {
 		
 	}
 	
-	
-	private List<String> sendGetRequestStringToOrion(OrionEntity ctxElement, String uri, int expected_code){
+	public void deleteOneEntity(String id) {
+		log.debug("Find entity: {}", id);
+		
+		String uri = this.orionAddr.toString() + ENTITIES_PATH + "/"+ id;
+		
+		sendDeleteRequestGenericEntityToOrion(uri, HttpStatus.SC_NO_CONTENT);
+		
+		
+	}
+	private List<String> sendGetRequestStringToOrion(T ctxElement, String uri, int expected_code){
 		
 		HttpResponse httpResponse = sendGetRequestToOrion(ctxElement, uri);
 		
@@ -331,7 +341,7 @@ public abstract class OrionConnector <T extends OrionEntity> {
 		return getStringFromResponse(httpResponse);
 	}
 	
-	private List<T> sendGetRequestGenericEntityToOrion(OrionEntity ctxElement, String uri, int expected_code){
+	private List<T> sendGetRequestGenericEntityToOrion(T ctxElement, String uri, int expected_code){
 		
 		HttpResponse httpResponse = sendGetRequestToOrion(ctxElement, uri);
 		
@@ -341,19 +351,26 @@ public abstract class OrionConnector <T extends OrionEntity> {
 	}
 
 		
-	private void  sendPostRequestVoidToOrion (OrionEntity ctxElement, String uri, int expected_code) {		
+	private void  sendPostRequestVoidToOrion (T ctxElement, String uri, int expected_code) {		
 		HttpResponse httpResponse = sendPostRequestToOrion(ctxElement, uri);
 		
 		httpResponse = checkResponse(httpResponse, expected_code);
 			
 	}
 	
-	private void  sendGetRequestVoidToOrion (OrionEntity ctxElement, String uri, int expected_code) {
-		sendGetRequestVoidToOrion (ctxElement, uri, expected_code, false);
+	private void  sendPatchRequestVoidToOrion (T ctxElement, String uri, int expected_code) {		
+		HttpResponse httpResponse = sendPatchRequestToOrion(ctxElement, uri);
+		
+		httpResponse = checkResponse(httpResponse, expected_code);
+			
+	}
+	
+	private void  sendGetRequestVoidToOrion (T ctxElement, String uri, int expected_code) {
+		sendGetRequestCountToOrion (ctxElement, uri, expected_code, false);
 	}
 	
 	
-	private int sendGetRequestVoidToOrion (OrionEntity ctxElement, String uri, int expected_code, boolean count) {
+	private int sendGetRequestCountToOrion (T ctxElement, String uri, int expected_code, boolean count) {
 		
 		HttpResponse httpResponse = sendGetRequestToOrion(ctxElement, uri);
 		
@@ -363,6 +380,13 @@ public abstract class OrionConnector <T extends OrionEntity> {
 			return getCount(httpResponse);
 		}
 		else return -1;
+	}
+	
+	private void  sendDeleteRequestGenericEntityToOrion (String uri, int expected_code) {		
+		HttpResponse httpResponse = sendDeleteRequestToOrion(uri);
+		
+		httpResponse = checkResponse(httpResponse, expected_code);
+			
 	}
 	
 	/**
@@ -379,7 +403,7 @@ public abstract class OrionConnector <T extends OrionEntity> {
 	 *             the context broker at the given address, or obtaining the
 	 *             answer from it.
 	 */
-	private HttpResponse sendPostRequestToOrion(OrionEntity ctxElement, String uri) {
+	private HttpResponse sendPostRequestToOrion(T ctxElement, String uri) {
 		
 		Request req = Request.Post(uri)
 				.addHeader("Accept", APPLICATION_JSON.getMimeType())
@@ -407,6 +431,46 @@ public abstract class OrionConnector <T extends OrionEntity> {
 	}
 	
 	/**
+	 * Sends a patch request to Orion
+	 * 
+	 * @param ctxElement
+	 *            The context element
+	 * @param uri
+	 *            the path from the context broker that determines which
+	 *            "operation"will be executed
+	 * @return the httpResponse object from Orion
+	 * @throws OrionConnectorException
+	 *             if a communication exception happens, either when contacting
+	 *             the context broker at the given address, or obtaining the
+	 *             answer from it.
+	 */
+	private HttpResponse sendPatchRequestToOrion(T ctxElement, String uri) {
+		
+		Request req = Request.Patch(uri)
+				.addHeader("Accept", APPLICATION_JSON.getMimeType())
+				.socketTimeout(5000);
+		
+		if (ctxElement != null ) {
+			String jsonEntity = gson.toJson(ctxElement);
+			log.debug("Send request to Orion {}: {}",uri, jsonEntity);
+			req.bodyString(jsonEntity, APPLICATION_JSON).connectTimeout(5000);
+
+		}
+		
+		if (this.config.getFiwareService() != null
+				&& !"".equalsIgnoreCase(this.config.getFiwareService())) {
+			req.addHeader("Fiware-Service", this.config.getFiwareService());
+		}
+		
+		Response response;
+		try {
+			response = req.execute();
+		} catch (IOException e) {
+			throw new OrionConnectorException("Could not execute HTTP request",	e);
+		}
+		return getHttpResponse(response);
+	}
+	/**
 	 * Sends a post request to Orion
 	 * 
 	 * @param ctxElement
@@ -420,7 +484,7 @@ public abstract class OrionConnector <T extends OrionEntity> {
 	 *             the context broker at the given address, or obtaining the
 	 *             answer from it.
 	 */
-	private HttpResponse sendGetRequestToOrion(OrionEntity ctxElement, String uri) {
+	private HttpResponse sendGetRequestToOrion(T ctxElement, String uri) {
 		
 
 		Request req = Request.Get(uri)
@@ -448,6 +512,40 @@ public abstract class OrionConnector <T extends OrionEntity> {
 		return getHttpResponse(response);
 	}
 
+	/**
+	 * Sends a post request to Orion
+	 * 
+	 * @param ctxElement
+	 *            The context element
+	 * @param uri
+	 *            the path from the context broker that determines which
+	 *            "operation"will be executed
+	 * @return the httpResponse object from Orion
+	 * @throws OrionConnectorException
+	 *             if a communication exception happens, either when contacting
+	 *             the context broker at the given address, or obtaining the
+	 *             answer from it.
+	 */
+	private HttpResponse sendDeleteRequestToOrion(String uri) {
+		
+		Request req = Request.Delete(uri)
+				.socketTimeout(5000);
+		
+		
+		if (this.config.getFiwareService() != null
+				&& !"".equalsIgnoreCase(this.config.getFiwareService())) {
+			req.addHeader("Fiware-Service", this.config.getFiwareService());
+		}
+		
+		Response response;
+		try {
+			response = req.execute();
+		} catch (IOException e) {
+			throw new OrionConnectorException("Could not execute HTTP request",	e);
+		}
+		return getHttpResponse(response);
+	}
+	
 	/**
 	 * retrieves the HttpResponse form the {@Link Response} of orion
 	 * @param response

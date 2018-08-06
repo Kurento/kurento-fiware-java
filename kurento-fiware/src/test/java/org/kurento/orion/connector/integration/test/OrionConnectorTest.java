@@ -21,12 +21,13 @@ class OrionConnectorTest {
 
 	class OrionEntityTest implements OrionEntity {
 		String id; 
-		String type = "TEST";
+		String type;
 		String description;
 		
 		public OrionEntityTest (String description) {
 			this.id = "Test_"+System.currentTimeMillis(); 
 			this.description = description;
+			this.type="TEST";
 		}
 		
 		@Override
@@ -49,6 +50,7 @@ class OrionConnectorTest {
 
 		@Override
 		public void setType(String type) {	
+			this.type=type;
 		}
 		
 		public void setDescription (String description) {
@@ -173,7 +175,7 @@ class OrionConnectorTest {
 			assertEquals(lstoe.size(),r, "[ERROR]Incomplete list");
 			boolean found = false;
 			
-			for(int i = 0; i<lstoe.size() && !found; i++, found = lstoe.get(i).getId().equals(oet.getId()));
+			for(int i = 0; i<lstoe.size() && !found; found = lstoe.get(i).getId().equals(oet.getId()), i++);
 					
 			assertTrue(found,"[ERROR]Entity not in the list" );
 			
@@ -221,5 +223,106 @@ class OrionConnectorTest {
 		}
 		log.info("[testCountEntities] END OK ({})",r);
 	}
+	
+	@Test
+	void testDeleteEntity() {
+		log.info("[testDeleteEntity] INI");
+		int countBefore=-1;
+		int countAfter = -1;
+		try {
+			OrionConnectorConfiguration occ =  new OrionConnectorConfiguration();
+			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ){};
+			URI expected = new URIBuilder()
+					.setScheme(occ.getOrionScheme())
+					.setHost(occ.getOrionHost()).setPort(occ.getOrionPort())
+					.build();
+			assertEquals(oc.getOrionAddr(), expected, "[ERROR]Bad formed URI expected:"+expected.toString()+" generated:"+oc.getOrionAddr().toString());
+			
+			countBefore = oc.getEntityCount("TEST");
+			//if there is already some TEST entity we use them to test the delete, no need to create another one
+			if (countBefore<1) {
+				new OrionEntityTest("testDeleteEntity");
+			}
+			countBefore = oc.getEntityCount("TEST");
+			assertTrue(countBefore > 0, "[ERROR]Bad result expected count > 0");
+
+			//get first "TEST" entity in orion
+			List<OrionEntityTest> lstoe = oc.readEntityList("TEST", 1, 0);
+			String idToDelete =lstoe.get(0).getId();
+			oc.deleteOneEntity(idToDelete);
+			countAfter = oc.getEntityCount("TEST");
+			
+			assertTrue((countBefore - countAfter)==1, "[ERROR]countBefore("+countBefore+") countAfter("+countAfter+")");
+			
+			lstoe = oc.readEntityList("TEST");
+			boolean found = false;
+			
+			for(int i = 0; i<lstoe.size() && !found;  found = lstoe.get(i).getId().equals(idToDelete), i++);
+			
+			assertTrue(!found,"[ERROR]Entity still in the list, another entity must have been deleted" );
+			
+		}catch (OrionConnectorException oce) {
+			log.info("[testDeleteEntity] END KO OrionConnectorException::"+oce.getLocalizedMessage());
+			fail("[ERROR OrionConnectorException]" + oce.getLocalizedMessage());
+			
+		} catch (URISyntaxException use) {
+			log.info("[testDeleteEntity] END KO URISyntaxException::"+use.getLocalizedMessage());
+			fail("[ERROR URISyntaxException]" + use.getLocalizedMessage());
+		} catch (Exception e) {
+			log.info("[testDeleteEntity] END KO Unknown "+ e.getClass()+"::"+e.getLocalizedMessage());
+			fail("[ERROR Unknown]" + e.getLocalizedMessage());
+		}
+		log.info("[testDeleteEntity] END OK ({})",countBefore);
+	}
+	
+	@Test
+	void testUpdateEntity() {
+		log.info("[testUpdateEntity] INI");
+		int countBefore=-1;
+		try {
+			OrionConnectorConfiguration occ =  new OrionConnectorConfiguration();
+			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ){};
+			URI expected = new URIBuilder()
+					.setScheme(occ.getOrionScheme())
+					.setHost(occ.getOrionHost()).setPort(occ.getOrionPort())
+					.build();
+			assertEquals(oc.getOrionAddr(), expected, "[ERROR]Bad formed URI expected:"+expected.toString()+" generated:"+oc.getOrionAddr().toString());
+			
+			countBefore = oc.getEntityCount("TEST");
+			//if there is already some TEST entity we use them to test the delete, no need to create another one
+			if (countBefore<1) {
+				new OrionEntityTest("testUpdateEntity");
+			}
+			countBefore = oc.getEntityCount("TEST");
+			assertTrue(countBefore > 0, "[ERROR]Bad result expected count > 0");
+
+			//get first "TEST" entity in orion
+			List<OrionEntityTest> lstoe = oc.readEntityList("TEST", 1, 0);
+			OrionEntityTest updateEntity =lstoe.get(0);
+			String updatedId = updateEntity.getId();
+			
+			updateEntity.setDescription("UPDATED description");
+			
+			oc.updateEntity(updateEntity);
+						
+			OrionEntityTest updatedEntity = oc.readEntity(updatedId);
+			
+			assertEquals(updateEntity.getDescription(), updatedEntity.getDescription(),"[ERROR]Entity description not updated" );
+			
+		}catch (OrionConnectorException oce) {
+			log.info("[testUpdateEntity] END KO OrionConnectorException::"+oce.getLocalizedMessage());
+			fail("[ERROR OrionConnectorException]" + oce.getLocalizedMessage());
+			
+		} catch (URISyntaxException use) {
+			log.info("[testUpdateEntity] END KO URISyntaxException::"+use.getLocalizedMessage());
+			fail("[ERROR URISyntaxException]" + use.getLocalizedMessage());
+		} catch (Exception e) {
+			log.info("[testUpdateEntity] END KO Unknown "+ e.getClass()+"::"+e.getLocalizedMessage());
+			fail("[ERROR Unknown]" + e.getLocalizedMessage());
+		}
+		log.info("[testUpdateEntity] END OK ({})",countBefore);
+	}
+	
+	
 
 }
