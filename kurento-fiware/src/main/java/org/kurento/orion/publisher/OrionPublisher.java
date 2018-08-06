@@ -17,7 +17,6 @@
 package org.kurento.orion.publisher;
 
 import org.kurento.orion.connector.entities.OrionEntity;
-import org.kurento.orion.connector.entities.OrionResponse;
 
 public interface OrionPublisher<T, O extends OrionEntity> {
 

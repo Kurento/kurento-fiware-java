@@ -22,6 +22,8 @@ public class OrionConnectorConfiguration {
 	private int orionPort = 1026;
 	private String orionScheme = "http";
 	private String fiwareService = "";
+	
+	private int LIMIT = 1000;
 
 	public String getOrionHost() {
 		return this.orionHost;
@@ -53,6 +55,14 @@ public class OrionConnectorConfiguration {
 
 	public void setFiwareService(String fiwareService) {
 		this.fiwareService = fiwareService;
+	}
+	
+	public void setQueryLimit(int limit) {
+		this.LIMIT = limit;
+	}
+	
+	public int getQueryLimit() {
+		return LIMIT;
 	}
 
 }

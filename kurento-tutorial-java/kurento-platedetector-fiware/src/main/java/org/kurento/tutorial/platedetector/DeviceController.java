@@ -27,7 +27,13 @@ public class DeviceController {
 	
 	private final Logger log = LoggerFactory.getLogger(DeviceController.class);
 
-	
+	/**
+	 * [WORKING]
+	 * Process the request for a new "source" device to be inserted in orion
+	 * @param ua
+	 * @param req
+	 * @return
+	 */
 	 @RequestMapping(value={"/device/new"}, method={RequestMethod.POST})
 	 @ResponseBody
 	 public String NewDevice(@RequestBody UserAgent ua, HttpServletRequest req) {
@@ -56,6 +62,14 @@ public class DeviceController {
 	    return response;
 	 }  
 	 
+	 /**
+	  * [TODO]
+	  * Process the request to "switch on" the device 
+	  * 	(updates on orion)
+	  * @param id
+	  * @param req
+	  * @return
+	  */
 	 @RequestMapping(value={"/device/activate/{DeviceID}"}, method={RequestMethod.POST})
 	 @ResponseBody
 	 public String activateDevice(@PathVariable(value="someID") String id, HttpServletRequest req) {
@@ -88,6 +102,13 @@ public class DeviceController {
 
 	 }  
 	 
+	 /**
+	  * [TODO]
+	  * Retrieves the device from orion
+	  * @param id
+	  * @param req
+	  * @return
+	  */
 	 @RequestMapping(value={"/device/{DeviceID}"}, method={RequestMethod.POST})
 	 @ResponseBody
 	 public String getDevice(@PathVariable(value="someID") String id, HttpServletRequest req) {

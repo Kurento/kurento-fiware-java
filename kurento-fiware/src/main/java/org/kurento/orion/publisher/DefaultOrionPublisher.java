@@ -19,7 +19,6 @@ package org.kurento.orion.publisher;
 import org.kurento.orion.connector.OrionConnector;
 import org.kurento.orion.connector.OrionConnectorConfiguration;
 import org.kurento.orion.connector.entities.OrionEntity;
-import org.kurento.orion.connector.entities.OrionResponse;
 
 public abstract class DefaultOrionPublisher<T, O extends OrionEntity> implements
 		OrionPublisher<T, O> {
@@ -28,7 +27,7 @@ public abstract class DefaultOrionPublisher<T, O extends OrionEntity> implements
 
 	public DefaultOrionPublisher(OrionConnectorConfiguration config) {
 		super();
-		this.orionConnector = new OrionConnector(config);
+		this.orionConnector = new OrionConnector<O>(config){};
 	}
 
 	/**

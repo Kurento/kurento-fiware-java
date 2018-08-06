@@ -18,11 +18,36 @@
   <name>Kurento Java Module - FIWARE integration</name>
   <description>Helper module to enable integration between Kurento client applications and FIWARE datastores</description>
 
+  <properties>
+  	<slf4j.version>1.7.25</slf4j.version>
+  	<junit.jupiter.version>5.0.0</junit.jupiter.version>
+    <junit.platform.version>1.2.0</junit.platform.version>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.surefire.version>2.22.0</maven.surefire.version>
+  </properties>
+  
   <scm>
     <url>https://github.com/Kurento/kurento-fiware-java</url>
     <connection>scm:git:git://github.com/Kurento/kurento-fiware-java.git</connection>
     <developerConnection>scm:git:git@github.com:Kurento/kurento-fiware-java.git</developerConnection>
   </scm>
+  
+  <build>
+  	<plugins>
+  		<plugin>
+		        <artifactId>maven-surefire-plugin</artifactId>
+		        <version>${maven.surefire.version}</version>
+		        <dependencies>
+		                <dependency>
+		                    <groupId>org.junit.platform</groupId>
+		                    <artifactId>junit-platform-surefire-provider</artifactId>
+		                    <version>${junit.platform.version}</version>
+		                </dependency>
+		        </dependencies>
+		    </plugin>
+	</plugins>
+  </build>
 
   <!-- Project dependencies.
   <version> fields come inherited from <dependencyManagement>
@@ -35,6 +60,42 @@
       <artifactId>kurento-client</artifactId>
     </dependency>
 
+	<!-- logs  -->
+	<dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+    </dependency>
+    
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4j.version}</version>
+    </dependency>
+   
+	<!-- Tests -->
+	<dependency>
+	    <groupId>org.junit.jupiter</groupId>
+	    <artifactId>junit-jupiter-api</artifactId>
+	    <version>${junit.jupiter.version}</version>
+	    <scope>test</scope>
+	</dependency>
+
+	<dependency>
+	    <groupId>org.junit.jupiter</groupId>
+	    <artifactId>junit-jupiter-engine</artifactId>
+	    <version>${junit.jupiter.version}</version>
+	    <scope>test</scope>
+	</dependency>
+	
+	<!-- Commons -->
+	<dependency>
+	    <groupId>commons-io</groupId>
+	    <artifactId>commons-io</artifactId>
+	    <version>2.6</version>
+	</dependency>
+	
+	
   </dependencies>
 
 </project>

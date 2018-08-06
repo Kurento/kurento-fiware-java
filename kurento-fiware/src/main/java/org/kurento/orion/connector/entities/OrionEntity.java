@@ -24,10 +24,14 @@ public interface OrionEntity {
 	public String getId();
 
 	public String getType();
-	
+		
 	public void setId(String id);
 
 	public void setType(String type);
-
+	
+	/*public default boolean equals(OrionEntity o) {
+		String just = "checking method";
+		return this.getId().equals(o.getId());
+	}*/
 
 }

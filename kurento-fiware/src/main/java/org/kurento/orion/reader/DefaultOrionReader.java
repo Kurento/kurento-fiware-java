@@ -30,7 +30,7 @@ public abstract class DefaultOrionReader<T, O extends OrionEntity> implements
 
 	public DefaultOrionReader(OrionConnectorConfiguration config) {
 		super();
-		this.orionConnector = new OrionConnector(config);
+		this.orionConnector = new OrionConnector<O>(config){};
 	}
 
 	/**
