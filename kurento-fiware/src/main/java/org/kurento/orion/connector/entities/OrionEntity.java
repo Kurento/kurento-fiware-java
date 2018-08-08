@@ -19,7 +19,7 @@ package org.kurento.orion.connector.entities;
 /**
  * Interface common to all objects that represent an Orion entity
  */
-public interface OrionEntity {
+public interface OrionEntity{
 
 	public String getId();
 

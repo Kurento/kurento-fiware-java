@@ -27,6 +27,12 @@ public interface OrionPublisher<T, O extends OrionEntity> {
 	public void update (T entity);
 	
 	public void update (O orionEntity);
+	
+	public void delete (T entity);
+	
+	public void delete (O orionEntity);
+	
+	public void delete (String id);
 
 	public O mapEntityToOrionEntity(T entity);
 }

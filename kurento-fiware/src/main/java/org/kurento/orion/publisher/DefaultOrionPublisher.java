@@ -19,16 +19,24 @@ package org.kurento.orion.publisher;
 import org.kurento.orion.connector.OrionConnector;
 import org.kurento.orion.connector.OrionConnectorConfiguration;
 import org.kurento.orion.connector.entities.OrionEntity;
+import org.kurento.orion.connector.entities.commons.JsonManager;
 
 public abstract class DefaultOrionPublisher<T, O extends OrionEntity> implements
 		OrionPublisher<T, O> {
 
-	protected OrionConnector orionConnector;
+	protected OrionConnector<O> orionConnector;
 
 	public DefaultOrionPublisher(OrionConnectorConfiguration config) {
 		super();
 		this.orionConnector = new OrionConnector<O>(config){};
 	}
+	
+	public DefaultOrionPublisher(OrionConnectorConfiguration config, JsonManager<O>  manager) {
+		super();
+		this.orionConnector = new OrionConnector<O>(config, manager){};
+	}
+	
+	
 
 	/**
 	 * Creates a new entity in FIWARE. The
@@ -40,7 +48,7 @@ public abstract class DefaultOrionPublisher<T, O extends OrionEntity> implements
 	 */
 	@Override
 	public O publish(T entity) {
-		OrionEntity orionEntity = mapEntityToOrionEntity(entity);
+		O orionEntity = mapEntityToOrionEntity(entity);
 		orionConnector.createNewEntity(orionEntity, true);
 		return (O)orionEntity;
 	}
@@ -67,7 +75,7 @@ public abstract class DefaultOrionPublisher<T, O extends OrionEntity> implements
 	 */
 	@Override
 	public void update (T entity) {
-		OrionEntity orionEntity = mapEntityToOrionEntity(entity);
+		O orionEntity = mapEntityToOrionEntity(entity);
 		orionConnector.updateEntity(orionEntity, true);
 	}
 	
@@ -82,6 +90,38 @@ public abstract class DefaultOrionPublisher<T, O extends OrionEntity> implements
 		orionConnector.updateEntity(orionEntity, true);
 	}
 	
+	/**
+	 * Deletes an existing entity identified by "id"
+	 * 
+	 * @param id 
+	 * 			a String indentifiying the OrionEntity to delete
+	 */
+	@Override
+	public void delete(String id) {
+		orionConnector.deleteOneEntity(id);
+	}
+	
+	/**
+	 * Deletes an existing entity representing the T object
+	 * 
+	 * @param T object 
+	 * 			object that maps to an Entity
+	 */
+	@Override
+	public void delete (T entity) {
+		OrionEntity entity2Delete = mapEntityToOrionEntity(entity);
+		orionConnector.deleteOneEntity(entity2Delete.getId());
+	}
+	
+	/**
+	 * Deletes an existing entity 
+	 * 
+	 * @param orionEntity 
+	 */
+	@Override
+	public void delete (O orionEntity) {
+		orionConnector.deleteOneEntity(orionEntity.getId());
+	}
 	
 	/**
 	 * Given an object, maps to an appropriate output FIWARE object.

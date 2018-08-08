@@ -16,15 +16,17 @@
 
 package org.kurento.orion.publisher;
 
-import org.kurento.client.Endpoint;
 import org.kurento.orion.connector.OrionConnectorConfiguration;
-import org.kurento.orion.connector.entities.OrionEntity;
+import org.kurento.orion.connector.entities.device.Device;
+import org.kurento.orion.connector.entities.device.DeviceJsonManager;
 
-public abstract class DeviceOrionPublisher<T extends Object, O extends OrionEntity> extends
-		DefaultOrionPublisher<T, O> {
+
+public abstract class DeviceOrionPublisher<T extends Object> extends
+		DefaultOrionPublisher<T, Device> {
 
 	public DeviceOrionPublisher(OrionConnectorConfiguration config) {
-		super(config);
+		super(config, new DeviceJsonManager());
+		
 	}
 
 }

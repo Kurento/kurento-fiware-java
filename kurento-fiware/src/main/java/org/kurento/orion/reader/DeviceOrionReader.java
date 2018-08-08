@@ -16,7 +16,6 @@
 
 package org.kurento.orion.reader;
 
-import org.kurento.client.Endpoint;
 import org.kurento.orion.connector.OrionConnectorConfiguration;
 import org.kurento.orion.connector.entities.OrionEntity;
 

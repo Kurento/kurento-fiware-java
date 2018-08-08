@@ -38,8 +38,9 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
 import org.apache.http.client.utils.URIBuilder;
-import org.kurento.orion.connector.entities.GenericOrionEntity;
 import org.kurento.orion.connector.entities.OrionEntity;
+import org.kurento.orion.connector.entities.commons.JsonManager;
+import org.kurento.orion.connector.entities.device.Device;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,8 +56,8 @@ import com.google.gson.reflect.TypeToken;
 public abstract class OrionConnector <T extends OrionEntity> {
 	
 	private static final String ENTITIES_PATH = "/v2/entities";
-	private static final String BATCH_PATH = "/v2/op/update";
-	private static final String QUERY_PATH = "/v2/op/query";
+/*	private static final String BATCH_PATH = "/v2/op/update";
+	private static final String QUERY_PATH = "/v2/op/query";*/
 	private static final String QUERY_ENTITY_TYPES = "/v2/types?options=values";
 	private static final String KEY_VALUES = "options=keyValues";
 	private static final String COUNT_HEADER="Fiware-Total-Count";
@@ -70,7 +71,7 @@ public abstract class OrionConnector <T extends OrionEntity> {
 		return orionAddr;
 	}
 
-	private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").create();
+	private Gson gson;
 	
 	private static final Logger log = LoggerFactory.getLogger(OrionConnector.class);
 
@@ -92,6 +93,22 @@ public abstract class OrionConnector <T extends OrionEntity> {
 	public OrionConnector(OrionConnectorConfiguration config) {
 		this.config = config;
 		this.init();
+		this.gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").create();
+	}
+
+	/**
+	 * 
+	 * @param config
+	 * @param deserializer
+	 */
+	public OrionConnector(OrionConnectorConfiguration config, JsonManager<T>  manager) {
+		this.config = config;
+		this.init();
+		final GsonBuilder gsonBuilder = new GsonBuilder();
+	    gsonBuilder.registerTypeAdapter(Device.class, manager);
+	    gsonBuilder.setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+	    gson = gsonBuilder.create();
+		
 	}
 
 	/**
