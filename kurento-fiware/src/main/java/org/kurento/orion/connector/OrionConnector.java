@@ -64,7 +64,8 @@ public abstract class OrionConnector <T extends OrionEntity> {
 		
 	
 	private OrionConnectorConfiguration config;
-
+	private Type t; 
+	
 	private URI orionAddr;
 	
 	public URI getOrionAddr() {
@@ -90,8 +91,9 @@ public abstract class OrionConnector <T extends OrionEntity> {
 	 * @param config
 	 *            Configuration object
 	 */
-	public OrionConnector(OrionConnectorConfiguration config) {
+	public OrionConnector(OrionConnectorConfiguration config, Class<T> clazz) {
 		this.config = config;
+		this.t = clazz;
 		this.init();
 		this.gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").create();
 	}
@@ -101,14 +103,15 @@ public abstract class OrionConnector <T extends OrionEntity> {
 	 * @param config
 	 * @param deserializer
 	 */
-	public OrionConnector(OrionConnectorConfiguration config, JsonManager<T>  manager) {
+	public OrionConnector(OrionConnectorConfiguration config, JsonManager<T>  manager, Class<T> clazz) {
 		this.config = config;
+		this.t = clazz;
 		this.init();
 		final GsonBuilder gsonBuilder = new GsonBuilder();
-	    gsonBuilder.registerTypeAdapter(Device.class, manager);
+	    gsonBuilder.registerTypeAdapter(clazz, manager);
 	    gsonBuilder.setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 	    gson = gsonBuilder.create();
-		
+		System.out.println("OrionConnector::Type name:" + t.getTypeName());	
 	}
 
 	/**
@@ -138,8 +141,6 @@ public abstract class OrionConnector <T extends OrionEntity> {
 		
 		List<String> entities = sendGetRequestStringToOrion(null, uri, HttpStatus.SC_OK);
 		
-		
-
 		return entities;
 		
 	}
@@ -631,10 +632,7 @@ public abstract class OrionConnector <T extends OrionEntity> {
 	 */
 	private List<T> getOrionObjFromResponse(HttpResponse httpResponse) {
 		InputStream source;
-		
-		Type sooper = getClass().getGenericSuperclass();
-	    Type t = ((ParameterizedType)sooper).getActualTypeArguments()[0 ];
-		
+					
 	    //Type listType = new TypeToken<List<String>>() {}.getType();
  
 		List <T> ctxResp = new ArrayList<T>();

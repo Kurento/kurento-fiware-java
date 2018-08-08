@@ -20,20 +20,21 @@ import org.kurento.orion.connector.OrionConnector;
 import org.kurento.orion.connector.OrionConnectorConfiguration;
 import org.kurento.orion.connector.entities.OrionEntity;
 import org.kurento.orion.connector.entities.commons.JsonManager;
+import org.kurento.orion.connector.entities.device.Device;
 
 public abstract class DefaultOrionPublisher<T, O extends OrionEntity> implements
 		OrionPublisher<T, O> {
 
 	protected OrionConnector<O> orionConnector;
 
-	public DefaultOrionPublisher(OrionConnectorConfiguration config) {
+	public DefaultOrionPublisher(OrionConnectorConfiguration config, Class<O> clazz) {
 		super();
-		this.orionConnector = new OrionConnector<O>(config){};
+		this.orionConnector = new OrionConnector<O>(config, clazz){};
 	}
 	
-	public DefaultOrionPublisher(OrionConnectorConfiguration config, JsonManager<O>  manager) {
+	public DefaultOrionPublisher(OrionConnectorConfiguration config, JsonManager<O>  manager, Class<O> clazz) {
 		super();
-		this.orionConnector = new OrionConnector<O>(config, manager){};
+		this.orionConnector = new OrionConnector<O>(config, manager, clazz){};
 	}
 	
 	
@@ -94,7 +95,7 @@ public abstract class DefaultOrionPublisher<T, O extends OrionEntity> implements
 	 * Deletes an existing entity identified by "id"
 	 * 
 	 * @param id 
-	 * 			a String indentifiying the OrionEntity to delete
+	 * 			a String identifying the OrionEntity to delete
 	 */
 	@Override
 	public void delete(String id) {

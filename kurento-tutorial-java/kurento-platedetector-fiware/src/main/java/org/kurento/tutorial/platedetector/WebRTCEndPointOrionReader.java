@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.kurento.orion.connector.OrionConnectorConfiguration;
-import org.kurento.orion.reader.DeviceOrionReader;
+import org.kurento.orion.connector.entities.device.DeviceOrionReader;
 import org.kurento.tutorial.platedetector.orion.models.WebRTCDevice;
 import org.kurento.tutorial.platedetector.orion.models.datamodels.DeviceDataModel;
 

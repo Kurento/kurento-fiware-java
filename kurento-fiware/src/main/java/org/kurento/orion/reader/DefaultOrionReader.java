@@ -16,22 +16,37 @@
 
 package org.kurento.orion.reader;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.kurento.orion.connector.OrionConnector;
 import org.kurento.orion.connector.OrionConnectorConfiguration;
 import org.kurento.orion.connector.entities.OrionEntity;
+import org.kurento.orion.connector.entities.commons.JsonManager;
 
 public abstract class DefaultOrionReader<T, O extends OrionEntity> implements
-		OrionReader<T, O> {
+	OrionReader	<T, O> {
 
-	protected OrionConnector orionConnector;
+	protected OrionConnector<O> orionConnector;
 
-	public DefaultOrionReader(OrionConnectorConfiguration config) {
+	
+	public DefaultOrionReader(OrionConnectorConfiguration config, Class<O> clazz) {
 		super();
-		this.orionConnector = new OrionConnector<O>(config){};
+		this.orionConnector = new OrionConnector<O>(config,clazz){};
 	}
+	
+
+	public DefaultOrionReader(OrionConnectorConfiguration config, JsonManager<O> manager, Class<O> clazz) {
+		super();
+		Type sooper = getClass().getGenericSuperclass();
+		for (Type t : ((ParameterizedType)sooper).getActualTypeArguments()) {
+			System.out.println("DefaultOrionReader::Type name:" + t.getTypeName());
+		}
+		this.orionConnector = new OrionConnector<O>(config, manager,clazz){};
+	}
+
 
 	/**
 	 * Reads a entity in FIWARE as a given Object.
@@ -41,8 +56,8 @@ public abstract class DefaultOrionReader<T, O extends OrionEntity> implements
 	 */
 	@Override
 	public T readObject(String id) {
-		OrionEntity orionEntity = orionConnector.readEntity(id);
-		return mapOrionEntityToEntity((O) orionEntity);
+		O orionEntity = orionConnector.readEntity(id);
+		return mapOrionEntityToEntity(orionEntity);
 	}
 
 	/**
@@ -64,7 +79,7 @@ public abstract class DefaultOrionReader<T, O extends OrionEntity> implements
 	 */
 	@Override
 	public List<T> readObjectList(String type) {
-		List<O> orionEntityList = (List<O>) orionConnector.readEntityList(type);
+		List<O> orionEntityList =  orionConnector.readEntityList(type);
 		List <T> result = new ArrayList<T>();
 		
 		for (O orionEntity : orionEntityList) {
@@ -81,7 +96,7 @@ public abstract class DefaultOrionReader<T, O extends OrionEntity> implements
 	 */
 	@Override
 	public List<O> readOrionEntityList(String type) {
-		return (List<O>) orionConnector.readEntityList(type); 
+		return orionConnector.readEntityList(type); 
 	} 
 
 	/**

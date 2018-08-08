@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.kurento.orion.connector.OrionConnectorConfiguration;
-import org.kurento.orion.publisher.DeviceOrionPublisher;
+import org.kurento.orion.connector.entities.device.DeviceOrionPublisher;
 import org.kurento.tutorial.platedetector.orion.models.UserAgent;
 import org.kurento.tutorial.platedetector.orion.models.WebRTCDevice;
 import org.kurento.tutorial.platedetector.orion.models.datamodels.DeviceDataModel;

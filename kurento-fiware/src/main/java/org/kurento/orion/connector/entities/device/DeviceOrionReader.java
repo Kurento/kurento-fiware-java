@@ -14,16 +14,24 @@
  * limitations under the License.
  */
 
-package org.kurento.orion.reader;
+package org.kurento.orion.connector.entities.device;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 import org.kurento.orion.connector.OrionConnectorConfiguration;
-import org.kurento.orion.connector.entities.OrionEntity;
+import org.kurento.orion.reader.DefaultOrionReader;
 
-public abstract class DeviceOrionReader<T extends Object, O extends OrionEntity> extends
-		DefaultOrionReader<T, O> {
+public abstract class DeviceOrionReader<T extends Object> extends
+		DefaultOrionReader<T, Device> {
 
 	public DeviceOrionReader(OrionConnectorConfiguration config) {
-		super(config);
+		super(config, new DeviceJsonManager(), Device.class);
+		Type sooper = getClass().getGenericSuperclass();
+		for (Type t : ((ParameterizedType)sooper).getActualTypeArguments()) {
+			System.out.println("DeviceOrionReader::Type name:" + t.getTypeName());
+		}
+	    
 	}
 
 }

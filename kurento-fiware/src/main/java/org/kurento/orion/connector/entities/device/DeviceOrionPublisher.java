@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package org.kurento.orion.publisher;
+package org.kurento.orion.connector.entities.device;
 
-import org.kurento.client.Event;
 import org.kurento.orion.connector.OrionConnectorConfiguration;
-import org.kurento.orion.connector.entities.OrionEntity;
+import org.kurento.orion.publisher.DefaultOrionPublisher;
 
-public abstract class EventOrionPublisher<T extends Event, O extends OrionEntity> extends
-		DefaultOrionPublisher<T, O> {
 
-	public EventOrionPublisher(OrionConnectorConfiguration config) {
-		super(config);
+public abstract class DeviceOrionPublisher<T extends Object> extends
+		DefaultOrionPublisher<T, Device> {
+
+	public DeviceOrionPublisher(OrionConnectorConfiguration config) {
+		super(config, new DeviceJsonManager(), Device.class);
+		
 	}
 
 }

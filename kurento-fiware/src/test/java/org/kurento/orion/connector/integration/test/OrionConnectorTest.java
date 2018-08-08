@@ -63,7 +63,7 @@ class OrionConnectorTest {
 		log.info("[testInit] INI");
 		try {
 			OrionConnectorConfiguration occ =  new OrionConnectorConfiguration();
-			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ){};
+			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ,OrionEntityTest.class){};
 			URI expected = new URIBuilder()
 					.setScheme(occ.getOrionScheme())
 					.setHost(occ.getOrionHost()).setPort(occ.getOrionPort())
@@ -88,7 +88,7 @@ class OrionConnectorTest {
 		log.info("[testConnectionAndEntities] INI");
 		try {
 			OrionConnectorConfiguration occ =  new OrionConnectorConfiguration();
-			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ){};
+			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ,OrionEntityTest.class){};
 			URI expected = new URIBuilder()
 					.setScheme(occ.getOrionScheme())
 					.setHost(occ.getOrionHost()).setPort(occ.getOrionPort())
@@ -120,7 +120,7 @@ class OrionConnectorTest {
 		log.info("[testCreateNewEntityAndRetrieveEntity] INI");
 		try {
 			OrionConnectorConfiguration occ =  new OrionConnectorConfiguration();
-			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ){};
+			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ,OrionEntityTest.class){};
 			URI expected = new URIBuilder()
 					.setScheme(occ.getOrionScheme())
 					.setHost(occ.getOrionHost()).setPort(occ.getOrionPort())
@@ -157,7 +157,7 @@ class OrionConnectorTest {
 		log.info("[testCreateNewEntityAndEntityList] INI");
 		try {
 			OrionConnectorConfiguration occ =  new OrionConnectorConfiguration();
-			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ){};
+			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ,OrionEntityTest.class){};
 			URI expected = new URIBuilder()
 					.setScheme(occ.getOrionScheme())
 					.setHost(occ.getOrionHost()).setPort(occ.getOrionPort())
@@ -200,7 +200,7 @@ class OrionConnectorTest {
 		int r=-1;
 		try {
 			OrionConnectorConfiguration occ =  new OrionConnectorConfiguration();
-			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ){};
+			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ,OrionEntityTest.class){};
 			URI expected = new URIBuilder()
 					.setScheme(occ.getOrionScheme())
 					.setHost(occ.getOrionHost()).setPort(occ.getOrionPort())
@@ -231,7 +231,7 @@ class OrionConnectorTest {
 		int countAfter = -1;
 		try {
 			OrionConnectorConfiguration occ =  new OrionConnectorConfiguration();
-			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ){};
+			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ,OrionEntityTest.class){};
 			URI expected = new URIBuilder()
 					.setScheme(occ.getOrionScheme())
 					.setHost(occ.getOrionHost()).setPort(occ.getOrionPort())
@@ -281,7 +281,7 @@ class OrionConnectorTest {
 		int countBefore=-1;
 		try {
 			OrionConnectorConfiguration occ =  new OrionConnectorConfiguration();
-			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ){};
+			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ,OrionEntityTest.class){};
 			URI expected = new URIBuilder()
 					.setScheme(occ.getOrionScheme())
 					.setHost(occ.getOrionHost()).setPort(occ.getOrionPort())
