@@ -40,10 +40,6 @@ public abstract class DefaultOrionReader<T, O extends OrionEntity> implements
 
 	public DefaultOrionReader(OrionConnectorConfiguration config, JsonManager<O> manager, Class<O> clazz) {
 		super();
-		Type sooper = getClass().getGenericSuperclass();
-		for (Type t : ((ParameterizedType)sooper).getActualTypeArguments()) {
-			System.out.println("DefaultOrionReader::Type name:" + t.getTypeName());
-		}
 		this.orionConnector = new OrionConnector<O>(config, manager,clazz){};
 	}
 

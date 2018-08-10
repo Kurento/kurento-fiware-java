@@ -5,20 +5,32 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.client.utils.URIBuilder;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.kurento.orion.connector.OrionConnector;
 import org.kurento.orion.connector.OrionConnectorConfiguration;
 import org.kurento.orion.connector.OrionConnectorException;
 import org.kurento.orion.connector.entities.OrionEntity;
+import org.kurento.orion.connector.entities.device.Device;
+import org.kurento.orion.connector.entities.device.DeviceOrionPublisher;
+import org.kurento.orion.connector.entities.device.DeviceOrionReader;
+import org.kurento.orion.connector.integration.test.DeviceTest.TestBasicAgnosticDevice;
 import org.slf4j.Logger;
 
 class OrionConnectorTest {
 	
 	private static final Logger log = getLogger(OrionConnectorTest.class);
+	
+	private static List<String> published_test_ids = new ArrayList<String>();
 
+	private static final OrionConnectorConfiguration occ =  new OrionConnectorConfiguration();
+	private static OrionConnector <OrionEntityTest> oc;
+	
 	class OrionEntityTest implements OrionEntity {
 		String id; 
 		String type;
@@ -58,43 +70,25 @@ class OrionConnectorTest {
 		}	
 	}
 	
-	@Test
-	void testInit() {
-		log.info("[testInit] INI");
-		try {
-			OrionConnectorConfiguration occ =  new OrionConnectorConfiguration();
-			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ,OrionEntityTest.class){};
-			URI expected = new URIBuilder()
-					.setScheme(occ.getOrionScheme())
-					.setHost(occ.getOrionHost()).setPort(occ.getOrionPort())
-					.build();
-			assertEquals(oc.getOrionAddr(), expected, "[ERROR]Bad formed URI expected:"+expected.toString()+" generated:"+oc.getOrionAddr().toString());
-
-		}catch (OrionConnectorException oce) {
-			log.info("[testInit] END KO OrionConnectorException::"+oce.getLocalizedMessage());
-			fail("[ERROR OrionConnectorException]" + oce.getLocalizedMessage());
-			
-		} catch (URISyntaxException use) {
-			log.info("[testInit] END KO URISyntaxException::"+use.getLocalizedMessage());
-			fail("[ERROR URISyntaxException]" + use.getLocalizedMessage());
-		}
-		
-		log.info("[testInit] END OK");
-
+	
+	@BeforeAll
+	public static void initialization() {
+		oc = new OrionConnector<OrionEntityTest>(occ,OrionEntityTest.class){};
 	}
 	
+	@AfterAll
+	public static void cleanInsert() {
+		for (String id: published_test_ids) {
+			oc.deleteOneEntity(id);
+			//published_test_ids.remove(id);
+		}
+	}
+	
+
 	@Test
 	void testConnectionAndEntities() {
 		log.info("[testConnectionAndEntities] INI");
 		try {
-			OrionConnectorConfiguration occ =  new OrionConnectorConfiguration();
-			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ,OrionEntityTest.class){};
-			URI expected = new URIBuilder()
-					.setScheme(occ.getOrionScheme())
-					.setHost(occ.getOrionHost()).setPort(occ.getOrionPort())
-					.build();
-			assertEquals(oc.getOrionAddr(), expected, "[ERROR]Bad formed URI expected:"+expected.toString()+" generated:"+oc.getOrionAddr().toString());
-
 			List<String> entities_types = oc.getEntityTypes();
 			
 			assertNotNull(entities_types, "[ERROR]null entities" );
@@ -103,9 +97,6 @@ class OrionConnectorTest {
 			log.info("[testConnectionAndEntities] END KO OrionConnectorException::"+oce.getLocalizedMessage());
 			fail("[ERROR OrionConnectorException]" + oce.getLocalizedMessage());
 			
-		} catch (URISyntaxException use) {
-			log.info("[testConnectionAndEntities] END KO URISyntaxException::"+use.getLocalizedMessage());
-			fail("[ERROR URISyntaxException]" + use.getLocalizedMessage());
 		} catch (Exception e) {
 			log.info("[testConnectionAndEntities] END KO Unknown "+ e.getClass()+"::"+e.getLocalizedMessage());
 			fail("[ERROR Unknown]" + e.getLocalizedMessage());
@@ -119,18 +110,12 @@ class OrionConnectorTest {
 		
 		log.info("[testCreateNewEntityAndRetrieveEntity] INI");
 		try {
-			OrionConnectorConfiguration occ =  new OrionConnectorConfiguration();
-			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ,OrionEntityTest.class){};
-			URI expected = new URIBuilder()
-					.setScheme(occ.getOrionScheme())
-					.setHost(occ.getOrionHost()).setPort(occ.getOrionPort())
-					.build();
-			assertEquals(oc.getOrionAddr(), expected, "[ERROR]Bad formed URI expected:"+expected.toString()+" generated:"+oc.getOrionAddr().toString());
-
+			
 			//create new Entity
 			OrionEntityTest oet = new OrionEntityTest("testCreateNewEntityAndRetrieveEntity");
 			
 			oc.createNewEntity(oet, true);
+			published_test_ids.add(oet.getId());
 			
 			OrionEntity toe = oc.readEntity(oet.getId());
 			
@@ -141,9 +126,6 @@ class OrionConnectorTest {
 			log.info("[testCreateNewEntityAndRetrieveEntity] END KO OrionConnectorException::"+oce.getLocalizedMessage());
 			fail("[ERROR OrionConnectorException]" + oce.getLocalizedMessage());
 			
-		} catch (URISyntaxException use) {
-			log.info("[testCreateNewEntityAndRetrieveEntity] END KO URISyntaxException::"+use.getLocalizedMessage());
-			fail("[ERROR URISyntaxException]" + use.getLocalizedMessage());
 		} catch (Exception e) {
 			log.info("[testCreateNewEntityAndRetrieveEntity] END KO Unknown "+ e.getClass()+"::"+e.getLocalizedMessage());
 			fail("[ERROR Unknown]" + e.getLocalizedMessage());
@@ -156,18 +138,12 @@ class OrionConnectorTest {
 	void testCreateNewEntityAndEntityList() {
 		log.info("[testCreateNewEntityAndEntityList] INI");
 		try {
-			OrionConnectorConfiguration occ =  new OrionConnectorConfiguration();
-			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ,OrionEntityTest.class){};
-			URI expected = new URIBuilder()
-					.setScheme(occ.getOrionScheme())
-					.setHost(occ.getOrionHost()).setPort(occ.getOrionPort())
-					.build();
-			assertEquals(oc.getOrionAddr(), expected, "[ERROR]Bad formed URI expected:"+expected.toString()+" generated:"+oc.getOrionAddr().toString());
-
+		
 			//create new Entity
 			OrionEntityTest oet = new OrionEntityTest("testCreateNewEntityAndEntityList");
 			
 			oc.createNewEntity(oet, true);
+			published_test_ids.add(oet.getId());
 			
 			List<OrionEntityTest> lstoe = oc.readEntityList(oet.getType());
 			int r = oc.getEntityCount("TEST");
@@ -183,9 +159,6 @@ class OrionConnectorTest {
 			log.info("[testCreateNewEntityAndEntityList] END KO OrionConnectorException::"+oce.getLocalizedMessage());
 			fail("[ERROR OrionConnectorException]" + oce.getLocalizedMessage());
 			
-		} catch (URISyntaxException use) {
-			log.info("[testCreateNewEntityAndEntityList] END KO URISyntaxException::"+use.getLocalizedMessage());
-			fail("[ERROR URISyntaxException]" + use.getLocalizedMessage());
 		} catch (Exception e) {
 			log.info("[testCreateNewEntityAndEntityList] END KO Unknown "+ e.getClass()+"::"+e.getLocalizedMessage());
 			fail("[ERROR Unknown]" + e.getLocalizedMessage());
@@ -199,13 +172,6 @@ class OrionConnectorTest {
 		log.info("[testCountEntities] INI");
 		int r=-1;
 		try {
-			OrionConnectorConfiguration occ =  new OrionConnectorConfiguration();
-			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ,OrionEntityTest.class){};
-			URI expected = new URIBuilder()
-					.setScheme(occ.getOrionScheme())
-					.setHost(occ.getOrionHost()).setPort(occ.getOrionPort())
-					.build();
-			assertEquals(oc.getOrionAddr(), expected, "[ERROR]Bad formed URI expected:"+expected.toString()+" generated:"+oc.getOrionAddr().toString());
 			
 			r = oc.getEntityCount("TEST");
 			assertTrue(r > -1, "[ERROR]Bad result expected count > 1");
@@ -214,9 +180,6 @@ class OrionConnectorTest {
 			log.info("[testCountEntities] END KO OrionConnectorException::"+oce.getLocalizedMessage());
 			fail("[ERROR OrionConnectorException]" + oce.getLocalizedMessage());
 			
-		} catch (URISyntaxException use) {
-			log.info("[testCountEntities] END KO URISyntaxException::"+use.getLocalizedMessage());
-			fail("[ERROR URISyntaxException]" + use.getLocalizedMessage());
 		} catch (Exception e) {
 			log.info("[testCountEntities] END KO Unknown "+ e.getClass()+"::"+e.getLocalizedMessage());
 			fail("[ERROR Unknown]" + e.getLocalizedMessage());
@@ -230,18 +193,12 @@ class OrionConnectorTest {
 		int countBefore=-1;
 		int countAfter = -1;
 		try {
-			OrionConnectorConfiguration occ =  new OrionConnectorConfiguration();
-			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ,OrionEntityTest.class){};
-			URI expected = new URIBuilder()
-					.setScheme(occ.getOrionScheme())
-					.setHost(occ.getOrionHost()).setPort(occ.getOrionPort())
-					.build();
-			assertEquals(oc.getOrionAddr(), expected, "[ERROR]Bad formed URI expected:"+expected.toString()+" generated:"+oc.getOrionAddr().toString());
 			
 			countBefore = oc.getEntityCount("TEST");
 			//if there is already some TEST entity we use them to test the delete, no need to create another one
 			if (countBefore<1) {
-				new OrionEntityTest("testDeleteEntity");
+				OrionEntityTest oet = new OrionEntityTest("testDeleteEntity");
+				oc.createNewEntity(oet, true);
 			}
 			countBefore = oc.getEntityCount("TEST");
 			assertTrue(countBefore > 0, "[ERROR]Bad result expected count > 0");
@@ -265,9 +222,6 @@ class OrionConnectorTest {
 			log.info("[testDeleteEntity] END KO OrionConnectorException::"+oce.getLocalizedMessage());
 			fail("[ERROR OrionConnectorException]" + oce.getLocalizedMessage());
 			
-		} catch (URISyntaxException use) {
-			log.info("[testDeleteEntity] END KO URISyntaxException::"+use.getLocalizedMessage());
-			fail("[ERROR URISyntaxException]" + use.getLocalizedMessage());
 		} catch (Exception e) {
 			log.info("[testDeleteEntity] END KO Unknown "+ e.getClass()+"::"+e.getLocalizedMessage());
 			fail("[ERROR Unknown]" + e.getLocalizedMessage());
@@ -280,18 +234,12 @@ class OrionConnectorTest {
 		log.info("[testUpdateEntity] INI");
 		int countBefore=-1;
 		try {
-			OrionConnectorConfiguration occ =  new OrionConnectorConfiguration();
-			OrionConnector <OrionEntityTest> oc = new OrionConnector<OrionEntityTest>(occ,OrionEntityTest.class){};
-			URI expected = new URIBuilder()
-					.setScheme(occ.getOrionScheme())
-					.setHost(occ.getOrionHost()).setPort(occ.getOrionPort())
-					.build();
-			assertEquals(oc.getOrionAddr(), expected, "[ERROR]Bad formed URI expected:"+expected.toString()+" generated:"+oc.getOrionAddr().toString());
-			
-			countBefore = oc.getEntityCount("TEST");
+					countBefore = oc.getEntityCount("TEST");
 			//if there is already some TEST entity we use them to test the delete, no need to create another one
 			if (countBefore<1) {
-				new OrionEntityTest("testUpdateEntity");
+				OrionEntityTest oet = new OrionEntityTest("testUpdateEntity");
+				oc.createNewEntity(oet, true);
+				published_test_ids.add(oet.getId());
 			}
 			countBefore = oc.getEntityCount("TEST");
 			assertTrue(countBefore > 0, "[ERROR]Bad result expected count > 0");
@@ -313,9 +261,6 @@ class OrionConnectorTest {
 			log.info("[testUpdateEntity] END KO OrionConnectorException::"+oce.getLocalizedMessage());
 			fail("[ERROR OrionConnectorException]" + oce.getLocalizedMessage());
 			
-		} catch (URISyntaxException use) {
-			log.info("[testUpdateEntity] END KO URISyntaxException::"+use.getLocalizedMessage());
-			fail("[ERROR URISyntaxException]" + use.getLocalizedMessage());
 		} catch (Exception e) {
 			log.info("[testUpdateEntity] END KO Unknown "+ e.getClass()+"::"+e.getLocalizedMessage());
 			fail("[ERROR Unknown]" + e.getLocalizedMessage());

@@ -111,7 +111,6 @@ public abstract class OrionConnector <T extends OrionEntity> {
 	    gsonBuilder.registerTypeAdapter(clazz, manager);
 	    gsonBuilder.setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 	    gson = gsonBuilder.create();
-		System.out.println("OrionConnector::Type name:" + t.getTypeName());	
 	}
 
 	/**
@@ -302,17 +301,18 @@ public abstract class OrionConnector <T extends OrionEntity> {
 	public void updateEntity(T orionEntity, boolean KeyValuesMode) {
 
 		//prepare uri
-		String uri = this.orionAddr.toString() + ENTITIES_PATH + "/"+orionEntity.getId()+"/attrs";
+		String uri = this.orionAddr.toString() + ENTITIES_PATH + "/"+orionEntity.getId()+"/attrs?type="+orionEntity.getType()+"&option=append";
 		
 		if (KeyValuesMode) {
-			uri += "?options=keyValues";
+			uri += "&options=keyValues";
 		}
+		
 		
 		//prepare entity - only parameters to change
 		orionEntity.setId(null);
 		orionEntity.setType(null);
 		
-		sendPatchRequestVoidToOrion(orionEntity, uri, HttpStatus.SC_NO_CONTENT);
+		sendPostRequestVoidToOrion(orionEntity, uri, HttpStatus.SC_NO_CONTENT);
 
 	}
 	
@@ -472,7 +472,6 @@ public abstract class OrionConnector <T extends OrionEntity> {
 			String jsonEntity = gson.toJson(ctxElement);
 			log.debug("Send request to Orion {}: {}",uri, jsonEntity);
 			req.bodyString(jsonEntity, APPLICATION_JSON).connectTimeout(5000);
-
 		}
 		
 		if (this.config.getFiwareService() != null
@@ -591,7 +590,15 @@ public abstract class OrionConnector <T extends OrionEntity> {
 	private HttpResponse checkResponse(HttpResponse httpResponse, int expected) {
 		
 		if (httpResponse.getStatusLine().getStatusCode() != expected) {
-			throw new OrionConnectorException("Failed with HTTP error code : "+ httpResponse.getStatusLine().getStatusCode());
+			String msg = null;
+			try {
+				InputStream source = httpResponse.getEntity().getContent();
+				Reader reader = new InputStreamReader(source);
+				msg = IOUtils.toString(reader);
+			}catch (IllegalStateException | IOException e) {
+				msg = "No message returned";
+			}
+			throw new OrionConnectorException("Failed with HTTP error code : "+ httpResponse.getStatusLine().getStatusCode()+"::"+msg);
 		}
 
 		return httpResponse;

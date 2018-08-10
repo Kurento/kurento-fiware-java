@@ -27,11 +27,6 @@ public abstract class DeviceOrionReader<T extends Object> extends
 
 	public DeviceOrionReader(OrionConnectorConfiguration config) {
 		super(config, new DeviceJsonManager(), Device.class);
-		Type sooper = getClass().getGenericSuperclass();
-		for (Type t : ((ParameterizedType)sooper).getActualTypeArguments()) {
-			System.out.println("DeviceOrionReader::Type name:" + t.getTypeName());
-		}
-	    
 	}
 
 }
