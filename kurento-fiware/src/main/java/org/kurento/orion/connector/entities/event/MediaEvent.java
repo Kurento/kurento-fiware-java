@@ -19,7 +19,6 @@ public class MediaEvent implements OrionEntity,Serializable{
 	String eventType;
 	
 	MediaSource mediasource;
-	String timestamp;
 	Object data;
 	String deviceSource;
 	String[] refersTo;
@@ -31,25 +30,23 @@ public class MediaEvent implements OrionEntity,Serializable{
 	}
 	
 	public MediaEvent(String id, String eventType, MediaSource mediasource,
-			String timestamp, Object data, String deviceSource, String[] refersTo) {
+			Object data, String deviceSource, String[] refersTo) {
 		super();
 		this._gsmaCommons = new GSMACommons();
 		this._gsmaCommons.id = id;
 		this.eventType = eventType;
 		this.mediasource = mediasource;
-		this.timestamp = timestamp;
 		this.data = data;
 		this.deviceSource = deviceSource;
 		this.refersTo = refersTo;
 	}
 	
 	public MediaEvent(GSMACommons _gsmaCommons, String eventType, MediaSource mediasource,
-			String timestamp, Object data, String deviceSource, String[] refersTo) {
+			Object data, String deviceSource, String[] refersTo) {
 		super();
 		this._gsmaCommons = _gsmaCommons;
 		this.eventType = eventType;
 		this.mediasource = mediasource;
-		this.timestamp = timestamp;
 		this.data = data;
 		this.deviceSource = deviceSource;
 		this.refersTo = refersTo;
@@ -89,14 +86,6 @@ public class MediaEvent implements OrionEntity,Serializable{
 
 	public void setMediasource(MediaSource mediasource) {
 		this.mediasource = mediasource;
-	}
-
-	public String getTimestamp() {
-		return timestamp;
-	}
-
-	public void setTimestamp(String timestamp) {
-		this.timestamp = timestamp;
 	}
 
 	public Object getData() {
@@ -141,6 +130,10 @@ public class MediaEvent implements OrionEntity,Serializable{
 			refersTo.add(oe.getId());
 		}
 		this.refersTo = (String[]) refersTo.toArray();
+	}
+
+	public GSMACommons _getGsmaCommons() {
+		return _gsmaCommons;
 	}
 
 }

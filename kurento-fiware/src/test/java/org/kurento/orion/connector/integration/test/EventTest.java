@@ -1,10 +1,11 @@
 package org.kurento.orion.connector.integration.test;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.slf4j.LoggerFactory.getLogger;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterAll;
@@ -15,6 +16,7 @@ import org.kurento.orion.connector.entities.event.MediaEvent;
 import org.kurento.orion.connector.entities.event.MediaEventJsonManager;
 import org.kurento.orion.connector.entities.event.MediaEventOrionPublisher;
 import org.kurento.orion.connector.entities.event.MediaEventOrionReader;
+import org.kurento.orion.publisher.OrionPublisherForbidenOperationException;
 import org.slf4j.Logger;
 
 import com.google.gson.Gson;
@@ -45,7 +47,8 @@ public class EventTest {
 			"      \"sendTagsInEvents\": false" + 
 			"    }" + 
 			"  }," + 
-			"  \"timestamp\": \"2017-11-03T10:45:23Z\"" + 
+			"  \"dateCreated\": \"2017-11-03T10:45:23Z\"," + 
+			"  \"dateModified\": \"2017-11-03T10:45:23Z\"" + 
 			"}";
 	
 	public static class TestBasicAgnosticMediaEvent{
@@ -235,37 +238,43 @@ public class EventTest {
 		}
 		assertTrue(!found,"[ERROR] published device hasn't been deleted");
 		log.info("[deleteDeviceByIdTest] END OK");
-	}
+	}*/
 	
 	@Test 
-	public void updateDeviceTest() {
-		log.info("[deleteDeviceByIdTest] INI");
+	public void updateEventTest() {
+		log.info("[updateEventTest] INI");
 		
-		/*Generate a Device
+		/*Generate a Device*/
 		final GsonBuilder gsonBuilder = new GsonBuilder();
 	    gsonBuilder.registerTypeAdapter(MediaEvent.class, new MediaEventJsonManager());
 	    final Gson gson = gsonBuilder.create();
-	    MediaEvent d = gson.fromJson(eventJson, MediaEvent.class);
+	    MediaEvent me = gson.fromJson(eventJson, MediaEvent.class);
 	    String newID = "Test_"+System.currentTimeMillis();
-	    d.setId(newID);
-		meop.publish(d);
-		published_test_ids.add(d.getId());
+	    me.setId(newID);
+		meop.publish(me);
+		published_test_ids.add(me.getId());
 		
 		Date now = new Date(System.currentTimeMillis());	
 		String nowstr = format.format(now);
 		
-		d._getGsmaCommons().setDateModified(nowstr);
-		d.setDeviceState("STARTED");
-		
-		meop.update(d);
+		me._getGsmaCommons().setDateModified(nowstr);
+		me.setEventType("plate-detector");
+		try {
+			meop.update(me);
+			//if an exception is not risen:
+			fail("[ERROR] EventSeems to be updated and Events Should't be updated");
+		}catch(OrionPublisherForbidenOperationException opfoe) {
+			log.info("OK: Update not accepted");
+		}
 		
 		MediaEvent read = meor.readOrionEntity(newID);
 		
-		assertTrue(read._getGsmaCommons().getDateModified().equals(d._getGsmaCommons().getDateModified()),"[ERROR] date not updated");
-		assertTrue(read.getDeviceState().equals(d.getDeviceState()),"[ERROR] state not updated");
+		assertTrue(!read._getGsmaCommons().getDateModified().equals(me._getGsmaCommons().getDateModified()),"[ERROR] date updated");
+		assertTrue(!read.getEventType().equals(me.getEventType()),"[ERROR] EventType updated");
 		
-		log.info("[deleteDeviceByIdTest] END OK");
+		log.info("[updateEventTest] END OK");
 	}
+	
 	/*Agnostic devices tests
 	@Test
 	public void publishAndReadAgnosticDeviceTest() {
