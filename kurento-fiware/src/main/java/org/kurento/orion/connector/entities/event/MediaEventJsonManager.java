@@ -28,7 +28,7 @@ public class MediaEventJsonManager extends JsonManager<MediaEvent> {
 		//event elements
 		
 		for (Field f: MediaEvent.class.getDeclaredFields()) {
-			if (!f.getName().equals("serialVersionUID")) {
+			if (!(f.getName().equals("serialVersionUID")|| f.getName().equals("TYPE"))) {
 				try {
 					f.setAccessible(true);
 					if (f.getType()==String.class) {
@@ -55,7 +55,7 @@ public class MediaEventJsonManager extends JsonManager<MediaEvent> {
 						Object so = f.get(event);
 	
 						for (Field sf : f.getType().getDeclaredFields()) {
-							if (!sf.getName().equals("serialVersionUID")) {
+							if (!(sf.getName().equals("serialVersionUID")|| sf.getName().equals("TYPE"))) {
 								sf.setAccessible(true);
 								Object obj = null;
 								obj = sf.get(so);

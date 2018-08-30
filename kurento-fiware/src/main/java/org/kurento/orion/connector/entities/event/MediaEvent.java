@@ -12,10 +12,11 @@ import org.kurento.orion.connector.entities.device.Device;
 public class MediaEvent implements OrionEntity,Serializable{
 
 	private static final long serialVersionUID = -1602741890197466709L;
+	public static final String TYPE = "MediaEvent";
 	
 	GSMACommons _gsmaCommons;
 
-	String type = "MediaEvent";
+	String type = TYPE;
 	String eventType;
 	
 	MediaSource mediasource;

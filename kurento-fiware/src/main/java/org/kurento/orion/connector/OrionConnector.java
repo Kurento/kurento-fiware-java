@@ -262,6 +262,10 @@ public abstract class OrionConnector <T extends OrionEntity> {
 	 *
 	 * @param type
 	 *            The entity type that would be queried
+	 * @param limit
+	 *            Maximun number of results
+	 * @param offset
+	 *            Start count
 	 * 
 	 * @throws OrionConnectorException
 	 *             if a communication exception happens, either when contacting
@@ -270,12 +274,72 @@ public abstract class OrionConnector <T extends OrionEntity> {
 	 */
 	public List<T> readEntityList(String type, int limit, int offset) {
 		
-		log.debug("Find entity with offset: {}", type);
+		log.debug("Find entity with offset: {}", offset);
 		
 		String uri = this.orionAddr.toString() + ENTITIES_PATH + "?type="+ type+"&offset="+offset+"&limit="+limit+"&"+KEY_VALUES;
 		
 		return (List<T>) sendGetRequestGenericEntityToOrion(null, uri, HttpStatus.SC_OK);
 				
+	}
+	
+	/**
+	 * Gets entities with an advanced query see http://telefonicaid.github.io/fiware-orion/api/v2/stable/
+	 * @param query 
+	 * 			advanced query
+	 * @param type
+	 * 			type of the entity
+	 * @return 
+	 * 			Entity list
+	 * @throws OrionConnectorException
+	 *             if a communication exception happens, either when contacting
+	 *             the context broker at the given address, or obtaining the
+	 *             answer from it.
+	 */
+	public List<T> readEntityQueryList(String type, String query){
+		log.debug("Find entity: {}", type);
+		
+		List<T> entities = new ArrayList<T>();
+		
+		int count = getEntityCount(type);
+		int offset = 0;
+		do {
+			
+			entities.addAll(readEntityQueryList(type, query, config.getQueryLimit(), offset));
+			offset+=config.getQueryLimit();
+			
+		}while(offset < count);
+		
+		return entities;
+	}
+	
+	/**
+	 * Gets entities with an advanced query see http://telefonicaid.github.io/fiware-orion/api/v2/stable/
+	 * 
+	 * @param query 
+	 * 			advanced query
+	 * @param type
+	 * 			type of the entity
+	 * @param limit
+	 * 			maximun number of results
+	 * @param offset
+	 * 			start count
+	 * @return 
+	 * 			Entity list
+	 * @throws OrionConnectorException
+	 *             if a communication exception happens, either when contacting
+	 *             the context broker at the given address, or obtaining the
+	 *             answer from it.
+	 */
+	public List<T> readEntityQueryList(String type, String query,  int limit, int offset){
+		log.debug("Find entity with offset: {}", offset);
+		
+		String uri = this.orionAddr.toString() + ENTITIES_PATH + "?type="+ type+
+																"&offset="+offset+
+																"&limit="+limit+
+																"&q="+query+
+																"&"+KEY_VALUES;
+		
+		return (List<T>) sendGetRequestGenericEntityToOrion(null, uri, HttpStatus.SC_OK);
 	}
 	
 	/**

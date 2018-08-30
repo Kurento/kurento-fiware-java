@@ -79,8 +79,13 @@ class OrionConnectorTest {
 	@AfterAll
 	public static void cleanInsert() {
 		for (String id: published_test_ids) {
-			oc.deleteOneEntity(id);
-			//published_test_ids.remove(id);
+			try {
+				oc.deleteOneEntity(id);
+				//published_test_ids.remove(id);
+			}
+			catch(OrionConnectorException e) {
+				log.error("Entity {} could't be deleted... SKIPPING", id);
+			}
 		}
 	}
 	

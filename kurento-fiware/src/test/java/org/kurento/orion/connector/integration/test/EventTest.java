@@ -12,6 +12,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.kurento.orion.connector.OrionConnectorConfiguration;
+import org.kurento.orion.connector.entities.commons.MediaSource;
 import org.kurento.orion.connector.entities.event.MediaEvent;
 import org.kurento.orion.connector.entities.event.MediaEventJsonManager;
 import org.kurento.orion.connector.entities.event.MediaEventOrionPublisher;
@@ -55,7 +56,35 @@ public class EventTest {
 		
 		
 		public TestBasicAgnosticMediaEvent(){}
-    
+		String id;
+		String type;
+		String mediaSource;
+		String dateCreated;
+		
+		public String getId() {
+			return id;
+		}
+		public void setId(String id) {
+			this.id = id;
+		}
+		public String getType() {
+			return type;
+		}
+		public void setType(String type) {
+			this.type = type;
+		}
+		public String getMediaSource() {
+			return mediaSource;
+		}
+		public void setMediaSource(String mediaSource) {
+			this.mediaSource = mediaSource;
+		}
+		public String getDateCreated() {
+			return dateCreated;
+		}
+		public void setDateCreated(String dateCreated) {
+			this.dateCreated = dateCreated;
+		}
 	}
 	
 	@BeforeAll
@@ -65,30 +94,13 @@ public class EventTest {
 			@Override
 			public MediaEvent mapEntityToOrionEntity(TestBasicAgnosticMediaEvent entity) {
 				MediaEvent event = new MediaEvent();
-				/*	device.setId(entity.getId());
-				if (entity.getPreferredProtocol()!=null) {
-					String[] supportedProtocols = new String[1];
-					supportedProtocols[0] = entity.getPreferredProtocol();
-					device._getDeviceCommons().setSupportedProtocol(supportedProtocols);
-				}				
-				Date now = new Date(System.currentTimeMillis());	
-				String nowstr = format.format(now);
-				device._getGsmaCommons().setDateCreated(nowstr);
-				
-				device._getGsmaCommons().setName(entity.getName());
-				device._getPysicalCommons().setColor(entity.color);
-				device.setDeviceState(entity.getState());
-				if (entity.getIpAddress()!=null) {
-					String[] ipAddresses = new String[1];
-					ipAddresses[0] = entity.getIpAddress();
-					device.setIpAddress(ipAddresses);
-				}
-				if (entity.getMacAddress()!=null) {
-					String[] macAddresses = new String[1];
-					macAddresses[0] = entity.getMacAddress();
-					device.setMacAddress(macAddresses);
-				}
-				device._getGsmaCommons().setDateModified(nowstr); */
+				event.setId(entity.getId());
+				event.setEventType(entity.getType());			
+				event._getGsmaCommons().setDateCreated(entity.getDateCreated());	
+				MediaSource ms = new MediaSource();
+				ms.setName(entity.getMediaSource());
+				event.setMediasource(ms);				
+				event._getGsmaCommons().setDateModified(entity.getDateCreated()); 
 				return event; 
 			}
 	    	
@@ -97,21 +109,16 @@ public class EventTest {
 	    meor = new MediaEventOrionReader<TestBasicAgnosticMediaEvent>(occ) {
 	    	
 		@Override
-		public TestBasicAgnosticMediaEvent mapOrionEntityToEntity(MediaEvent device) {
+		public TestBasicAgnosticMediaEvent mapOrionEntityToEntity(MediaEvent event) {
 			
-			TestBasicAgnosticMediaEvent agnostic_device = new TestBasicAgnosticMediaEvent();
+			TestBasicAgnosticMediaEvent entity = new TestBasicAgnosticMediaEvent();
 			
-			/*agnostic_device.setId(device.getId());
-			if (device._getDeviceCommons().getSupportedProtocol()!=null && device._getDeviceCommons().getSupportedProtocol().length>0)
-				agnostic_device.setPreferredProtocol(device._getDeviceCommons().getSupportedProtocol()[0]);
-			agnostic_device.setName(device._getGsmaCommons().getName());
-			agnostic_device.setColor(device._getPysicalCommons().getColor());
-			agnostic_device.setState(device.getDeviceState());
-			if (device.getIpAddress()!=null && device.getIpAddress().length>0)
-				agnostic_device.setIpAddress(device.getIpAddress()[0]);
-			if (device.getMacAddress()!=null && device.getMacAddress().length>0)
-				agnostic_device.setMacAddress(device.getMacAddress()[0]);*/
-			return agnostic_device;
+			entity.setId(event.getId());
+			entity.setType(event.getEventType());
+			entity.setDateCreated(event._getGsmaCommons().getDateCreated());
+			entity.setMediaSource(event.getMediasource().getName());
+			
+			return entity;
 		}};
 	}
 	
@@ -187,37 +194,50 @@ public class EventTest {
 		log.info("[publishAndReadMediaEventTest] END OK");
 	}
 	
-/*	@Test
-	public void readDeviceListTest() {
-		log.info("[readDeviceListTest] INI");
+	@Test
+	public void readAllEventListTest() {
+		log.info("[readAllEventListTest] INI");
 		
-		/*Generate a Device
+		/*Generate a Device*/
 		final GsonBuilder gsonBuilder = new GsonBuilder();
 	    gsonBuilder.registerTypeAdapter(MediaEvent.class, new MediaEventJsonManager());
 	    final Gson gson = gsonBuilder.create();
-	    MediaEvent d = gson.fromJson(eventJson, MediaEvent.class);
-	    d.setId("Test_"+System.currentTimeMillis());
-		meop.publish(d);
-		published_test_ids.add(d.getId());
+	    
+	    //we will generate a list of 10 events with different ids
+	    for (int i = 0; i< 10; i++) {
+	    	MediaEvent d = gson.fromJson(eventJson, MediaEvent.class);
+	 	    d.setId("Test_"+System.currentTimeMillis());
+	 	    d.setEventType("list-test");
+	 		meop.publish(d);
+	 		published_test_ids.add(d.getId());
+	    }
+	    
+	    for (int i = 0; i< 10; i++) {
+	    	MediaEvent d = gson.fromJson(eventJson, MediaEvent.class);
+	 	    d.setId("Test_"+System.currentTimeMillis());
+	 	    d.setEventType("list2-test");
+	 		meop.publish(d);
+	 		published_test_ids.add(d.getId());
+	    }
 		
-		List<Device> read = meor.readOrionEntityList(d.getType());
+		List<MediaEvent> read = meor.readOrionEntityList("MediaEvent");
 		
-		boolean found = false;
-		for (MediaEvent rd: read) {
-			if(rd.getId().equals(d.getId())) {
-				found = true;
-				break;
-			}
-		}
-		assertTrue(found,"[ERROR] published device is not in the list");
-		log.info("[readDeviceListTest] END OK");
+		assertTrue(read.size()>=20, "[ERROR] the list doesn't contain at least 20 elemens");
+		
+		//we need to recover by event Type
+		List<MediaEvent> read_2 = meor.readMediaEventListByEventType("list-test");
+		assertTrue(read_2.size()==10, "[ERROR] the list doesn't contain exactly 10 elemens("+read_2.size()+")" );
+		
+		// TODO : we need to recover by creation dates.
+		
+		log.info("[readAllEventListTest] END OK");
 	}
 	
 	@Test
-	public void deleteDeviceByIdTest() {
-		log.info("[deleteDeviceByIdTest] INI");
+	public void deleteMediaEventByIdTest() {
+		log.info("[deleteMediaEventByIdTest] INI");
 		
-		/*Generate a Device
+		/*Generate a Media Event*/
 		final GsonBuilder gsonBuilder = new GsonBuilder();
 	    gsonBuilder.registerTypeAdapter(MediaEvent.class, new MediaEventJsonManager());
 	    final Gson gson = gsonBuilder.create();
@@ -227,7 +247,7 @@ public class EventTest {
 		
 		meop.delete(d.getId());
 		
-		List<Device> read = meor.readOrionEntityList(d.getType());
+		List<MediaEvent> read = meor.readOrionEntityList(d.getType());
 		
 		boolean found = false;
 		for (MediaEvent rd: read) {
@@ -236,9 +256,9 @@ public class EventTest {
 				break;
 			}
 		}
-		assertTrue(!found,"[ERROR] published device hasn't been deleted");
-		log.info("[deleteDeviceByIdTest] END OK");
-	}*/
+		assertTrue(!found,"[ERROR] published event hasn't been deleted");
+		log.info("[deleteMediaEventByIdTest] END OK");
+	}
 	
 	@Test 
 	public void updateEventTest() {
@@ -275,40 +295,36 @@ public class EventTest {
 		log.info("[updateEventTest] END OK");
 	}
 	
-	/*Agnostic devices tests
+	/*Agnostic devices tests*/
 	@Test
 	public void publishAndReadAgnosticDeviceTest() {
 		log.info("[publishAndReadAgnosticDeviceTest] INI");
 		
 		//new agnostic_device
-		TestBasicAgnosticMediaEvent agnostic_device = new TestBasicAgnosticDevice();	
-		agnostic_device.setId("AgnosticDevice_"+System.currentTimeMillis());
-		agnostic_device.setPreferredProtocol("sigfox");
-		agnostic_device.setName("publishAndReadAgnosticDeviceTest");
-		agnostic_device.setColor("red");
-		agnostic_device.setState("STANDBY");
-		agnostic_device.setIpAddress("185.35.54.152");
-		agnostic_device.setMacAddress("ac:23:23:11:23:cd:54");
+		TestBasicAgnosticMediaEvent agnostic_event = new TestBasicAgnosticMediaEvent();	
+		agnostic_event.setId("Agnostic_"+System.currentTimeMillis());
+		agnostic_event.setType("agnostic-event");
+		agnostic_event.setMediaSource("Fake Media Source");
+		agnostic_event.setDateCreated("2017-11-03T10:45:23Z");
+		
 		
 		//publish
-		meop.publish(agnostic_device);
-		published_test_ids.add(agnostic_device.getId());
+		meop.publish(agnostic_event);
+		published_test_ids.add(agnostic_event.getId());
 		
 		
-		TestBasicAgnosticMediaEvent read = meor.readObject(agnostic_device.getId());
+		TestBasicAgnosticMediaEvent read = meor.readObject(agnostic_event.getId());
 		
-		assertTrue(read.getId().equals(agnostic_device.getId()),"[ERROR] different IDs");
-		assertTrue(read.getColor().equals(agnostic_device.getColor()),"[ERROR] different color");
-		assertTrue(read.getPreferredProtocol().equals(agnostic_device.getPreferredProtocol()),"[ERROR] different protocol");
-		assertTrue(read.getName().equals(agnostic_device.getName()),"[ERROR] different name");
-		assertTrue(read.getState().equals(agnostic_device.getState()),"[ERROR] different state");
-		assertTrue(read.getIpAddress().equals(agnostic_device.getIpAddress()),"[ERROR] different ipaddress");
-		assertTrue(read.getMacAddress().equals(agnostic_device.getMacAddress()),"[ERROR] different macaddress");
+		assertTrue(read.getId().equals(agnostic_event.getId()),"[ERROR] different IDs");
+		assertTrue(read.getType().equals(agnostic_event.getType()),"[ERROR] different type");
+		assertTrue(read.getMediaSource().equals(agnostic_event.getMediaSource()),"[ERROR] different media source");
+		assertTrue(read.getDateCreated().equals(agnostic_event.getDateCreated()),"[ERROR] different date created");
+		
 
-		List <TestBasicAgnosticDevice> readlst = meor.readObjectList("Device");
+		List <TestBasicAgnosticMediaEvent> readlst = meor.readObjectList(MediaEvent.TYPE);
 		boolean found = false;
 		for (TestBasicAgnosticMediaEvent tbad : readlst) {
-			if (tbad.getId().equals(agnostic_device.getId())) {
+			if (tbad.getId().equals(agnostic_event.getId())) {
 				found = true;
 				break;
 			}
@@ -317,42 +333,5 @@ public class EventTest {
 		
 		//asserts 
 		log.info("[publishAndReadAgnosticDeviceTest] END OK");
-	}
-	
-	@Test
-	public void updateAgnosticDeviceTest() {
-		log.info("[updateAgnosticDeviceTest] INI");
-		
-		//new agnostic_device
-		TestBasicAgnosticMediaEvent agnostic_device = new TestBasicAgnosticDevice();	
-		String newID = "AgnosticDevice_"+System.currentTimeMillis();
-		agnostic_device.setId(newID);
-		agnostic_device.setPreferredProtocol("sigfox");
-		agnostic_device.setName("updateAgnosticDeviceTest");
-		agnostic_device.setColor("red");
-		agnostic_device.setState("STANDBY");
-		agnostic_device.setIpAddress("185.35.54.152");
-		agnostic_device.setMacAddress("ac:23:23:11:23:cd:54");
-		
-		//publish
-		meop.publish(agnostic_device);
-		published_test_ids.add(agnostic_device.getId());
-		
-		agnostic_device.setState("STARTED");
-		meop.update(agnostic_device);
-				
-		TestBasicAgnosticMediaEvent read = meor.readObject(newID);
-		
-		assertTrue(read.getId().equals(newID),"[ERROR] different IDs");
-		assertTrue(read.getColor().equals(agnostic_device.getColor()),"[ERROR] different color");
-		assertTrue(read.getPreferredProtocol().equals(agnostic_device.getPreferredProtocol()),"[ERROR] different protocol");
-		assertTrue(read.getName().equals(agnostic_device.getName()),"[ERROR] different name");
-		assertTrue(read.getState().equals(agnostic_device.getState()),"[ERROR] different state");
-		assertTrue(read.getIpAddress().equals(agnostic_device.getIpAddress()),"[ERROR] different ipaddress");
-		assertTrue(read.getMacAddress().equals(agnostic_device.getMacAddress()),"[ERROR] different macaddress");
-		
-		//asserts 
-		log.info("[updateAgnosticDeviceTest] END OK");
-	}*/
-	
+	}	
 }

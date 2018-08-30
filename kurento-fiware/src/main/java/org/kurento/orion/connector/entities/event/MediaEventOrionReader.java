@@ -16,6 +16,8 @@
 
 package org.kurento.orion.connector.entities.event;
 
+import java.util.List;
+
 import org.kurento.orion.connector.OrionConnectorConfiguration;
 import org.kurento.orion.reader.DefaultOrionReader;
 
@@ -26,4 +28,17 @@ public abstract class MediaEventOrionReader<T extends Object> extends
 		super(config, new MediaEventJsonManager(), MediaEvent.class);
 	}
 
+	/**
+	 * Get list of the mediaEvents of certain eventType 
+	 * not in the default reader.
+	 * @param eventType
+	 * @return
+	 */
+	public List<MediaEvent> readMediaEventListByEventType(String eventType){
+		
+		//configure query
+		String query = "eventType=='"+eventType+"'";
+		
+		return this.orionConnector.readEntityQueryList(MediaEvent.TYPE, query);
+	}
 }

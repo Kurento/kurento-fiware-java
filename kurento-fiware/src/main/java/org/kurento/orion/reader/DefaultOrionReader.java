@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.kurento.orion.connector.OrionConnector;
 import org.kurento.orion.connector.OrionConnectorConfiguration;
+import org.kurento.orion.connector.OrionConnectorException;
 import org.kurento.orion.connector.entities.OrionEntity;
 import org.kurento.orion.connector.entities.commons.JsonManager;
 
@@ -103,5 +104,6 @@ public abstract class DefaultOrionReader<T, O extends OrionEntity> implements
 	 */
 	@Override
 	abstract public T mapOrionEntityToEntity(final O entity);
+
 
 }
