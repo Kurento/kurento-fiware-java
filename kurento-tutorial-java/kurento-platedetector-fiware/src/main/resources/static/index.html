@@ -41,9 +41,16 @@
     <script type="text/javascript" src="webjars/angularjs/1.7.0/angular-route.js"></script>
     <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-2.5.0.js"></script>
     
+    <!-- jquery -->
+    <script type="text/javascript" src="vendor/jquery/jquery.min.js"></script>
+    
     <!-- detect browser -->
     <script type="text/javascript" src="js/detect.js"></script>
     
+    <!-- kurento -->
+    <script type="text/javascript" src="js/index.js"></script>
+    <script type="text/javascript" src="js/console.js"></script>
+    <script type="text/javascript" src=/js/kurento-utils.min.js></script>
     
     <script type="text/javascript">		
     angular.module("app", ['ui.bootstrap'])
@@ -58,7 +65,6 @@
 		function($location, $scope, $http, CSRF_TOKEN){
 			var self = this;
 			self.registered = false;
-			self.mediaselected = false;
 			self.agentInfo = detect.parse(navigator.userAgent);
 			console.log($location.absUrl().indexOf("error="))
 			if ($location && $location.absUrl().indexOf("error=unregistered") >= 0) {
@@ -70,43 +76,16 @@
 				self.error = true;
 				$('#error').text("An undefinend error has occured");
 			}
-			$scope.getDeviceList = function() {
-				//after login we ask the application for the registered application
-				$http.post("devices")
-				.then(function(data) {							
-					if (data.data.devices) {
-						self.devices = data.data.deviceList								
-						//$scope.getregistereddata();
-					} else {
-						self.devices = []
-					}
-				}).catch(function() {
-					self.devices = []
-				});
-			};
-			$http.post("devices")
-					.then(function(data) {							
-								if (data.data.devices) {
-									self.devices = data.data.deviceList								
-									//$scope.getregistereddata();
-								} else {
-									self.devices = []
-								}
-							}).catch(function() {
-								self.devices = []
-							});
-			
-			self.newDevice = function() {
+			self.newCamera = function() {
 					//TODO: get data from 
  					var data = JSON.stringify(self.agentInfo);	     					
- 					//var formData = new FormData(document.querySelector('#'+id))
- 					$http.post('device/new', self.agentInfo)
+ 					var formData = new FormData(document.querySelector('#newCamera'))
+ 					$http.post('camera/new', formData)
      				    .then(function(data) {
      				    	if (data.data.result == "OK"){
      				    		console.log("success device:"+data.data.device.id);
          				    	self.registered = true;
          				    	self.device_id=data.data.device.id;
-         				    	$scope.getDeviceList();
      				    	}else{
      				    		console.log("result error");
      				    	}})
@@ -114,10 +93,9 @@
      				    		console.log("error");
      				    	})
      						.finally(function(){
-     							console.log("end newDevice");
+     							console.log("end newCamera");
      						});	     	
  				    };
- 			
  			self.start = function(){
  				
  				start();
@@ -184,7 +162,7 @@
 						<ul>
 							<ol>Open this page with a browser compliant with WebRTC (Chrome, Firefox).</ol>
 							<ol>Register a new device (webcam) by pressing addDevice</ol>
-							<ol>Select a device from the list and start recieving the output of the selected cam and the event registered </ol>
+							<ol>Press Start to start processing plates with the camera</ol>
 						</ul>
                     </div>
                 </div>
@@ -192,36 +170,38 @@
         </div>
     </header>
 
-    <section id="maincontainer">
+	<section id="initial" data-ng-show="!home.registered">
+		<div class="container">
+			<form id="newCamera">
+				<input id="id" name="id" class="element text medium" type="text" maxlength="255" value="">
+				<input id="name" name="name" class="element text medium" type="text" maxlength="255" value="">
+				<input id="type" name="type" hidden value="WebCam">
+ 			</form>
+ 			<a id="register" href="#" class="btn btn-default center" data-ng-click="home.newCamera()">
+				<span class="glyphicon glyphicon-webcam"></span> Register new Cam </a>
+		</div>
+	</section>
+    <section id="maincontainer"  data-ng-show="home.registered">
         <div class="container">
             <div class="row">
                 <div class="col-lg-6 text-center">
-                    <h3>Register Cam</h3>
+                    <h3>Cam</h3>
                     <hr class="star-light"></hr>
                 </div>
 				 <div class="col-lg-6 text-center">
-                    <h3>Registered Devices </h3>
+                    <h3>Console</h3>
                     <hr class="star-light"></hr>
                 </div>
             </div>
             <div class="row buttons">
-				<div class="col-md-6" data-ng-show="!home.registered">
-					<a id="register" href="#" class="btn btn-default" data-ng-click="home.newDevice()">
-							<span class="glyphicon glyphicon-webcam"></span> Register new Cam </a>
-				</div>
 				<div class="col-md-3" data-ng-show="home.registered">
 					<a id="start" href="#" class="btn btn-success " data-ng-click="home.start()">
 							<span class="glyphicon glyphicon-play"></span> Start </a>
 				</div>
 				<div class="col-md-3" data-ng-show="home.registered">
-					<a id="start" href="#" class="btn btn-danger" data-ng-click="home.stop()">
+					<a id="stop" href="#" class="btn btn-danger" data-ng-click="home.stop()">
 							<span class="glyphicon glyphicon-stop"></span> Stop </a>
-				</div>
-				<div class="col-md-6" data-ng-show="home.mediaselected"">
-						<a id="back2list" href="#" class="btn btn-danger" data-ng-click="home.devicesList()">
-								<span class="glyphicon glyphicon-th-list"></span> back to list </a>
-				</div>
-				
+				</div>			
 			</div>
             <div class="row main">
 				<div class="col-lg-6">
@@ -229,14 +209,9 @@
 					<video id="videoInput" autoplay width="480px" height="360px"
 							poster="img/webrtc.png"></video>
 				</div>
-				<div class=col-lg-6" data-ng-show="!home.mediaselected">
-					Here there should be a list with the registered devices
-					those with ON state should be clickable rest not
-				</div>
-				<div class=col-lg-6" data-ng-show="home.mediaselected">
-					<h4>Remote stream</h4>
-					<video id="videoOutput" autoplay width="480px" height="360px"
-						poster="img/webrtc.png"></video>
+				<div class="col-md-6">
+					<label class="control-label" for="console">Console</label>
+					<div id="console"></div>
 				</div>
             </div>
 			

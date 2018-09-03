@@ -31,9 +31,10 @@ import org.kurento.module.platedetector.PlateDetectedEvent;
 import org.kurento.module.platedetector.PlateDetectorFilter;
 import org.kurento.orion.connector.OrionConnectorConfiguration;
 import org.kurento.orion.connector.OrionConnectorException;
-import org.kurento.orion.publisher.EventOrionPublisher;
-import org.kurento.tutorial.platedetector.orion.models.datamodels.MediaEventDataModel;
-import org.kurento.tutorial.platedetector.orion.models.datamodels.VehicleDataModel;
+import org.kurento.tutorial.platedetector.models.DevicePlateDetectedEvent;
+import org.kurento.tutorial.platedetector.orion.PlateDetectedEventPublisher;
+import org.kurento.tutorial.platedetector.UserSession;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +51,7 @@ import com.google.gson.JsonObject;
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author David Fernandez (d.fernandezlop@gmail.com)
- * @since 5.0.0
+ * @author Guiomar Tuñón (gtunon@naevatec.com)
  */
 public class PlateDetectorHandler extends TextWebSocketHandler {
 
@@ -62,8 +63,6 @@ public class PlateDetectorHandler extends TextWebSocketHandler {
 	@Autowired
 	private KurentoClient kurento;
 
-	@Autowired
-	private VehicleService vehicleService;
 
 	@Override
 	public void handleTextMessage(WebSocketSession session, TextMessage message)
@@ -144,59 +143,25 @@ public class PlateDetectorHandler extends TextWebSocketHandler {
 					.addPlateDetectedListener(new EventListener<PlateDetectedEvent>() {
 						@Override
 						public void onEvent(PlateDetectedEvent event) {
+							
 							final OrionConnectorConfiguration orionConnectorConfiguration = new OrionConnectorConfiguration();
 
+							final PlateDetectedEventPublisher plateDetectedEventPublisher = new PlateDetectedEventPublisher(orionConnectorConfiguration);
+							
+							DevicePlateDetectedEvent extendedEvent = new DevicePlateDetectedEvent(event, null);
+							
+							// TODO add the camera information (from {@link: CameraSession} 
+							
 							JsonObject response = new JsonObject();
 							response.addProperty("id", "plateDetected");
 							response.addProperty("plate", event.getPlate());
 							try {
 								session.sendMessage(new TextMessage(response.toString()));
-
-								// Publish Vehicle Data Model in FIWARE
-
-								EventOrionPublisher<PlateDetectedEvent, VehicleDataModel> vehiclePublisher = new EventOrionPublisher<PlateDetectedEvent, VehicleDataModel>(
-										orionConnectorConfiguration) {
-
-									@Override
-									public VehicleDataModel mapEntityToOrionEntity(
-											final PlateDetectedEvent event) {
-										// Get info from the system about the
-										// car whose plate has been detected
-										VehicleDataModel vehicle = vehicleService
-												.getVehicleFromPlate(event.getPlate());
-
-										return vehicle;
-									}
-								};
-
-								try {
-									vehiclePublisher.publish(event);
-								} catch (OrionConnectorException e) {
-									log.warn("Could not publish event in ORION");
-								}
-
-								// Publish PlateDetectedEvent Data Model in
-								// FIWARE
-
-								PlateDetectorEventOrionPublisher plateDetectorEventPublisher = new PlateDetectorEventOrionPublisher(
-										orionConnectorConfiguration);
-
-								plateDetectorEventPublisher.publish(event);
-
-								// Publish MediaEvent Data Model in FIWARE
-
-								MediaEventOrionPublisher mediaEventPublisher = new MediaEventOrionPublisher(
-										orionConnectorConfiguration);
-
-								MediaEventDataModel mediaEventDataModel = mediaEventPublisher
-										.mapEntityToOrionEntity(event);
-
-								try {
-									mediaEventPublisher.publish(mediaEventDataModel);
-								} catch (OrionConnectorException e) {
-									log.warn("Could not publish event in ORION");
-								}
-
+								plateDetectedEventPublisher.publish(extendedEvent);
+								
+							} catch (OrionConnectorException e) {
+								log.warn("Could not publish event in ORION");
+								sendError(session, e.getMessage());
 							} catch (Throwable t) {
 								sendError(session, t.getMessage());
 							}
@@ -215,7 +180,9 @@ public class PlateDetectorHandler extends TextWebSocketHandler {
 			synchronized (session) {
 				session.sendMessage(new TextMessage(response.toString()));
 			}
+			
 			webRtcEndpoint.gatherCandidates();
+			
 		} catch (Throwable t) {
 			sendError(session, t.getMessage());
 		}

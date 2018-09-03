@@ -1,5 +1,6 @@
 package org.kurento.tutorial.platedetector;
 
+import java.text.SimpleDateFormat;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -8,9 +9,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.kurento.orion.connector.OrionConnectorConfiguration;
 import org.kurento.orion.connector.OrionConnectorException;
-import org.kurento.orion.connector.entities.OrionEntity;
-import org.kurento.tutorial.platedetector.orion.models.UserAgent;
-import org.kurento.tutorial.platedetector.orion.models.WebRTCDevice;
+import org.kurento.tutorial.platedetector.models.Camera;
+import org.kurento.tutorial.platedetector.orion.CamPublisher;
+import org.kurento.tutorial.platedetector.orion.CamReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,9 +24,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.gson.Gson;
 
 @RestController 
-public class DeviceController {
+public class CameraController {
 	
-	private final Logger log = LoggerFactory.getLogger(DeviceController.class);
+	private final Logger log = LoggerFactory.getLogger(CameraController.class);
+	private static SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:SS");
 
 	/**
 	 * [WORKING]
@@ -34,26 +36,46 @@ public class DeviceController {
 	 * @param req
 	 * @return
 	 */
-	 @RequestMapping(value={"/device/new"}, method={RequestMethod.POST})
+	 @RequestMapping(value={"/camera/new"}, method={RequestMethod.POST})
 	 @ResponseBody
-	 public String NewDevice(@RequestBody UserAgent ua, HttpServletRequest req) {
+	 public String NewCamera(HttpServletRequest req) {
 		 String response = "{\"result\": __RESULT__}";
 		 
 		 try {
-				WebRTCDevice wrtcd = new WebRTCDevice(ua,req.getRemoteAddr());
-				
+			 	//we create the new Camera with the info of the user
+			 	
 				final OrionConnectorConfiguration orionConnectorConfiguration = new OrionConnectorConfiguration();
-				WebRTCEndPointOrionPublisher endpointPublisher = new WebRTCEndPointOrionPublisher(
-						orionConnectorConfiguration);
 				
-				try {
-					wrtcd.setId(endpointPublisher.publish(wrtcd).getId());
-					Gson gson = new Gson();
-					String jsonInString = gson.toJson(wrtcd);
-					response= response.replace("__RESULT__","\"OK\","+"\"device\":"+jsonInString);
-				} catch (OrionConnectorException e) {
-					log.warn("Could not publish Device in ORION");
-				}
+				CamPublisher cp = new CamPublisher(orionConnectorConfiguration);
+				
+				Camera cam = new Camera();
+
+				
+				//check if Id is set
+				if (req.getParameter("id")!=null || "".equals(req.getParameter("id"))) 
+					cam.setId(req.getParameter("id"));
+				
+				else cam.setId("CameraDefault_"+System.currentTimeMillis());
+				
+				if (req.getParameter("name")!=null || "".equals(req.getParameter("name"))) cam.setName(req.getParameter("id")); 
+				
+				if (req.getParameter("type")!=null || "".equals(req.getParameter("type"))) cam.setType(req.getParameter("type")); 
+
+				//check if Dates are set. 
+				cam.setCreationDate(format.format(System.currentTimeMillis()));
+				cam.setUpdateDate(cam.getCreationDate());
+				cam.setState("NEW");
+				
+				// TODO ips will be updated on ICE negotiation
+				
+				Gson gson = new Gson();
+				String jsonInString = gson.toJson(cam);
+				log.debug("CAM:{}",jsonInString);
+					
+				cp.publish(cam);
+					
+				response= response.replace("__RESULT__","\"OK\","+"\"device\":"+jsonInString);
+				
 		 } catch (Throwable t) {
 			 	response=response.replace("__RESULT__", "error");
 				//sendError(session, t.getMessage());
@@ -76,31 +98,25 @@ public class DeviceController {
 		 String response = "{\"result\": __RESULT__}";
 		 
 		 try {
-				WebRTCDevice wrtcd = new WebRTCDevice();
-				
-				wrtcd.setId(id);
-				wrtcd.setActive(true);
 			
-				final OrionConnectorConfiguration orionConnectorConfiguration = new OrionConnectorConfiguration();
-				WebRTCEndPointOrionPublisher endpointPublisher = new WebRTCEndPointOrionPublisher(
-						orionConnectorConfiguration);
-				
-				try {
-					endpointPublisher.update(wrtcd);
-					Gson gson = new Gson();
-					String jsonInString = gson.toJson(wrtcd);
-					response= response.replace("__RESULT__","\"OK\","+"\"device\":"+jsonInString);
-				} catch (OrionConnectorException e) {
-					log.warn("Could not publish Device in ORION");
-				}
+			 final OrionConnectorConfiguration orionConnectorConfiguration = new OrionConnectorConfiguration();
+			 CamPublisher cp = new CamPublisher(orionConnectorConfiguration);
+			 CamReader cr = new CamReader(orionConnectorConfiguration);
+			 
+			 Camera cam = cr.readObject(id);
+			 cam.setState("PROCESSING");
+			 cam.setUpdateDate(format.format(System.currentTimeMillis()));
+			 cp.update(cam);
+			 Gson gson = new Gson();
+			 String jsonInString = gson.toJson(cam);
+			 response= response.replace("__RESULT__","\"OK\","+"\"device\":"+jsonInString);
 		 } catch (Throwable t) {
 			 	response=response.replace("__RESULT__", "error");
 				//sendError(session, t.getMessage());
 		}
 		
 	    return response;
-
-	 }  
+	 } 
 	 
 	 /**
 	  * [TODO]
@@ -109,7 +125,7 @@ public class DeviceController {
 	  * @param req
 	  * @return
 	  */
-	 @RequestMapping(value={"/device/{DeviceID}"}, method={RequestMethod.POST})
+	 /*@RequestMapping(value={"/device/{DeviceID}"}, method={RequestMethod.POST})
 	 @ResponseBody
 	 public String getDevice(@PathVariable(value="someID") String id, HttpServletRequest req) {
 		 String response = "{\"result\": __RESULT__}";
@@ -127,7 +143,7 @@ public class DeviceController {
 					endpointReader.readOrionEntity(id);
 					/*Gson gson = new Gson();
 					String jsonInString = gson.toJson(wrtcd);
-					response= response.replace("__RESULT__","\"OK\","+"\"device\":"+jsonInString);*/
+					response= response.replace("__RESULT__","\"OK\","+"\"device\":"+jsonInString);
 				} catch (OrionConnectorException e) {
 					log.warn("Could not publish Device in ORION");
 				}
@@ -166,7 +182,7 @@ public class DeviceController {
 		
 	    return response;
 
-	 }  
+	 }  */
 	 
 	 
 	 private void debugRequest(HttpServletRequest req) {

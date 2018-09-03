@@ -72,13 +72,14 @@ function start() {
 	console.log("Starting video call ...")
 	// Disable start button
 	setState(I_AM_STARTING);
-	showSpinner(videoInput, videoOutput);
-
+	//showSpinner(videoInput, videoOutput);
+	showSpinner(videoInput);
+	
 	console.log("Creating WebRtcPeer and generating local sdp offer ...");
 
 	var options = {
 		      localVideo: videoInput,
-		      remoteVideo: videoOutput,
+		      //remoteVideo: videoOutput,
 			  onicecandidate: onIceCandidate
 		    }
 	webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options,
@@ -138,7 +139,8 @@ function stop() {
 		}
 		sendMessage(message);
 	}
-	hideSpinner(videoInput, videoOutput);
+	//hideSpinner(videoInput, videoOutput);
+	hideSpinner(videoInput)
 }
 
 function setState(nextState) {
