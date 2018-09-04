@@ -1,5 +1,6 @@
 package org.kurento.tutorial.platedetector;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Enumeration;
 import java.util.List;
@@ -14,6 +15,8 @@ import org.kurento.tutorial.platedetector.orion.CamPublisher;
 import org.kurento.tutorial.platedetector.orion.CamReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,6 +46,7 @@ public class CameraController {
 		 
 		 try {
 			 	//we create the new Camera with the info of the user
+			 	debugRequest(req);
 			 	
 				final OrionConnectorConfiguration orionConnectorConfiguration = new OrionConnectorConfiguration();
 				
@@ -51,15 +55,11 @@ public class CameraController {
 				Camera cam = new Camera();
 
 				
-				//check if Id is set
-				if (req.getParameter("id")!=null || "".equals(req.getParameter("id"))) 
-					cam.setId(req.getParameter("id"));
+				cam.setId("CameraDefault_"+System.currentTimeMillis());
 				
-				else cam.setId("CameraDefault_"+System.currentTimeMillis());
+				cam.setName("Kurento-plate-detector Camera"); 
 				
-				if (req.getParameter("name")!=null || "".equals(req.getParameter("name"))) cam.setName(req.getParameter("id")); 
-				
-				if (req.getParameter("type")!=null || "".equals(req.getParameter("type"))) cam.setType(req.getParameter("type")); 
+				cam.setType("plate-detector"); 
 
 				//check if Dates are set. 
 				cam.setCreationDate(format.format(System.currentTimeMillis()));
@@ -85,7 +85,6 @@ public class CameraController {
 	 }  
 	 
 	 /**
-	  * [TODO]
 	  * Process the request to "switch on" the device 
 	  * 	(updates on orion)
 	  * @param id
@@ -94,9 +93,9 @@ public class CameraController {
 	  */
 	 @RequestMapping(value={"/device/activate/{DeviceID}"}, method={RequestMethod.POST})
 	 @ResponseBody
-	 public String activateDevice(@PathVariable(value="someID") String id, HttpServletRequest req) {
+	 public String activateDevice(@PathVariable(value="DeviceID") String id, HttpServletRequest req) {
 		 String response = "{\"result\": __RESULT__}";
-		 
+		 log.debug("[activateDevice] INI {}",id);
 		 try {
 			
 			 final OrionConnectorConfiguration orionConnectorConfiguration = new OrionConnectorConfiguration();
@@ -114,76 +113,50 @@ public class CameraController {
 			 	response=response.replace("__RESULT__", "error");
 				//sendError(session, t.getMessage());
 		}
-		
+		log.debug("[activateDevice] END");
+
 	    return response;
 	 } 
 	 
 	 /**
-	  * [TODO]
-	  * Retrieves the device from orion
+	  * Process the request to "switch on" the device 
+	  * 	(updates on orion)
 	  * @param id
 	  * @param req
 	  * @return
 	  */
-	 /*@RequestMapping(value={"/device/{DeviceID}"}, method={RequestMethod.POST})
+	 @RequestMapping(value={"/device/pause/{DeviceID}"}, method={RequestMethod.POST})
 	 @ResponseBody
-	 public String getDevice(@PathVariable(value="someID") String id, HttpServletRequest req) {
+	 public String pauseDevice(@PathVariable(value="DeviceID") String id, HttpServletRequest req) {
 		 String response = "{\"result\": __RESULT__}";
-		 
+		 log.debug("[activateDevice] INI {}",id);
 		 try {
-				WebRTCDevice wrtcd = new WebRTCDevice();
-				
-				wrtcd.setId(id);
 			
-				final OrionConnectorConfiguration orionConnectorConfiguration = new OrionConnectorConfiguration();
-				WebRTCEndPointOrionReader endpointReader = new WebRTCEndPointOrionReader(
-						orionConnectorConfiguration);
-				
-				try {
-					endpointReader.readOrionEntity(id);
-					/*Gson gson = new Gson();
-					String jsonInString = gson.toJson(wrtcd);
-					response= response.replace("__RESULT__","\"OK\","+"\"device\":"+jsonInString);
-				} catch (OrionConnectorException e) {
-					log.warn("Could not publish Device in ORION");
-				}
+			 final OrionConnectorConfiguration orionConnectorConfiguration = new OrionConnectorConfiguration();
+			 CamPublisher cp = new CamPublisher(orionConnectorConfiguration);
+			 CamReader cr = new CamReader(orionConnectorConfiguration);
+			 
+			 Camera cam = cr.readObject(id);
+			 cam.setState("STOP");
+			 cam.setUpdateDate(format.format(System.currentTimeMillis()));
+			 cp.update(cam);
+			 Gson gson = new Gson();
+			 String jsonInString = gson.toJson(cam);
+			 response= response.replace("__RESULT__","\"OK\","+"\"device\":"+jsonInString);
 		 } catch (Throwable t) {
 			 	response=response.replace("__RESULT__", "error");
 				//sendError(session, t.getMessage());
 		}
-		
-	    return response;
+		log.debug("[activateDevice] END");
 
-	 }  
-	 
-	 @RequestMapping(value={"/devices"}, method={RequestMethod.POST})
-	 @ResponseBody
-	 public String getDevice( HttpServletRequest req) {
-		 String response = "{\"result\": __RESULT__}";
-		 
-		 try {
-				
-				final OrionConnectorConfiguration orionConnectorConfiguration = new OrionConnectorConfiguration();
-				WebRTCEndPointOrionReader endpointReader = new WebRTCEndPointOrionReader(
-						orionConnectorConfiguration);
-				
-				try {
-					List<WebRTCDevice> wrtcdList =  endpointReader.readObjectList();
-					Gson gson = new Gson();
-					String jsonInString = gson.toJson(wrtcdList);
-					response= response.replace("__RESULT__","\"OK\","+"\"deviceList\":"+jsonInString);
-				} catch (OrionConnectorException e) {
-					log.warn("Could not get  Device List");
-				}
-		 } catch (Throwable t) {
-			 	response=response.replace("__RESULT__", "error");
-				//sendError(session, t.getMessage());
-		}
-		
 	    return response;
-
-	 }  */
+	 } 
 	 
+	 @ExceptionHandler({IllegalArgumentException.class, NullPointerException.class})
+	 void handleBadRequests(HttpServletResponse response) throws IOException {
+		log.debug("[handleBadRequests] RISED");
+		response.sendError(HttpStatus.BAD_REQUEST.value());
+	 }
 	 
 	 private void debugRequest(HttpServletRequest req) {
 		Enumeration<String> parameterNames = req.getParameterNames();
@@ -198,9 +171,6 @@ public class CameraController {
 				String paramValue = paramValues[i];
 				log.debug("\t" + paramValue);
 			}
-
-		}
-
-		 
+		}	 
 	 }
 }

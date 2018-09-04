@@ -83,17 +83,17 @@
  					$http.post('camera/new', formData)
      				    .then(function(data) {
      				    	if (data.data.result == "OK"){
-     				    		console.log("success device:"+data.data.device.id);
+     				    		page_console.event("[NEW CAMERA]success device:" + data.data.device.id);
          				    	self.registered = true;
          				    	self.device_id=data.data.device.id;
      				    	}else{
-     				    		console.log("result error");
+     				    		page_console.error("[NEW CAMERA]result error");
      				    	}})
      				    	.catch(function() {
-     				    		console.log("error");
+     				    		page_console.error("[NEW CAMERA] error");
      				    	})
      						.finally(function(){
-     							console.log("end newCamera");
+     							page_console.log("end newCamera");
      						});	     	
  				    };
  			self.start = function(){
@@ -103,17 +103,35 @@
  				$http.post('device/activate/'+self.device_id)
 				    .then(function(data) {
 				    	if (data.data.result == "OK"){
-				    		console.log("success device:"+data.data.device.id);
+				    		page_console.event("[START PROCESSING]success device:"+data.data.device.id);
 				    	}else{
-				    		console.log("result error");
+				    		page_console.error("[START PROCESSING] result error");
 				    	}})
 				    	.catch(function() {
-				    		console.log("error");
+				    		page_console.error("[START PROCESSING] error");
 				    	})
 						.finally(function(){
-							console.log("end device/activate");
+							page_console.log("[START PROCESSING] end device/activate");
 						});	     	
 			 };
+			 self.stop = function(){
+	 				
+	 				stop();
+	 				
+	 				$http.post('device/pause/'+self.device_id)
+					    .then(function(data) {
+					    	if (data.data.result == "OK"){
+					    		page_console.event("[STOP PROCESSING] success pause device:"+data.data.device.id);
+					    	}else{
+					    		page_console.error("[STOP PROCESSING]result error");
+					    	}})
+					    	.catch(function() {
+					    		page_console.log(" [STOP PROCESSING] error");
+					    	})
+							.finally(function(){
+								page_console.log("[STOP PROCESSING] device/activate");
+							});	     	
+				 };
 		}]); 
 	</script>
     
@@ -157,32 +175,24 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="intro-text">
-                        <h1 class="name">Tutorial: WebRTC Plate Detector Filter with Orion Integration</h1>
+                        <h1 class="name">Tutorial: WebRTC Plate Detector with Orion Integration</h1>
                         <p>This application shows a WebRtcEndpoint connected to itself (loopback) with a PlateDetector filter in the middle (take a look to the Media Pipeline) Whenever a plate is detected it is processed and archived in Orion. To run this demo follow these steps:</p>
-						<ul>
-							<ol>Open this page with a browser compliant with WebRTC (Chrome, Firefox).</ol>
-							<ol>Register a new device (webcam) by pressing addDevice</ol>
-							<ol>Press Start to start processing plates with the camera</ol>
-						</ul>
+						<ol>
+							<li>Open this page with a browser compliant with WebRTC (Chrome, Firefox).</li>
+							<li>Register a new device (webcam) by pressing Register new Cam</li>
+							<li>Press Start to start processing plates with the camera</li>
+						</ol>
                     </div>
                 </div>
             </div>
         </div>
     </header>
 
-	<section id="initial" data-ng-show="!home.registered">
-		<div class="container">
-			<form id="newCamera">
-				<input id="id" name="id" class="element text medium" type="text" maxlength="255" value="">
-				<input id="name" name="name" class="element text medium" type="text" maxlength="255" value="">
-				<input id="type" name="type" hidden value="WebCam">
- 			</form>
- 			<a id="register" href="#" class="btn btn-default center" data-ng-click="home.newCamera()">
-				<span class="glyphicon glyphicon-webcam"></span> Register new Cam </a>
-		</div>
-	</section>
-    <section id="maincontainer"  data-ng-show="home.registered">
-        <div class="container">
+	
+		
+
+    <section id="maincontainer">
+        <div class="container" >
             <div class="row">
                 <div class="col-lg-6 text-center">
                     <h3>Cam</h3>
@@ -193,28 +203,33 @@
                     <hr class="star-light"></hr>
                 </div>
             </div>
-            <div class="row buttons">
-				<div class="col-md-3" data-ng-show="home.registered">
-					<a id="start" href="#" class="btn btn-success " data-ng-click="home.start()">
-							<span class="glyphicon glyphicon-play"></span> Start </a>
+            <div class="row ">
+            	<div class="container col-lg-6 text-center" data-ng-show="!home.registered" >
+            		<!-- Button for new cam -->
+ 					<a id="register" href="#" class="btn btn-default center" data-ng-click="home.newCamera()">
+						<span class="glyphicon glyphicon-webcam"></span> Register new Cam </a>
 				</div>
-				<div class="col-md-3" data-ng-show="home.registered">
-					<a id="stop" href="#" class="btn btn-danger" data-ng-click="home.stop()">
-							<span class="glyphicon glyphicon-stop"></span> Stop </a>
-				</div>			
-			</div>
-            <div class="row main">
-				<div class="col-lg-6">
-					<h4>Local stream</h4>
-					<video id="videoInput" autoplay width="480px" height="360px"
+				<div class="container col-lg-6 text-center" data-ng-show="home.registered">
+					<!-- camera initialized -->
+					<div class="row video">
+						<video id="videoInput" autoplay width="480px" height="360px"
 							poster="img/webrtc.png"></video>
-				</div>
-				<div class="col-md-6">
-					<label class="control-label" for="console">Console</label>
+					</div>
+					<div class="row buttons">
+						<div class="col-md-6">
+							<a id="start" href="#" class="btn btn-success " data-ng-click="home.start()">
+								<span class="glyphicon glyphicon-play"></span> Start </a>
+						</div>
+						<div class="col-md-6">
+							<a id="stop" href="#" class="btn btn-danger" data-ng-click="home.stop()">
+								<span class="glyphicon glyphicon-stop"></span> Stop </a>
+						</div>
+					</div>
+				</div>	
+				<div class="container col-lg-6">
 					<div id="console"></div>
-				</div>
-            </div>
-			
+				</div>	
+			</div>
         </div>
     </section>
 

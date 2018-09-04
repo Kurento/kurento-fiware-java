@@ -26,7 +26,9 @@ public class PlateDetectedEventPublisher extends MediaEventOrionPublisher<Device
 		orion_entity.setId("PlateDetected_"+System.currentTimeMillis()+"_"+kurentoEvent.getPlate());
 		orion_entity._getGsmaCommons().setDateCreated(kurentoEvent.getTimestamp());
 		orion_entity.setData(kurentoEvent.getPlate());
-		orion_entity.setDeviceSource(kurentoEvent.getCamera().getId());
+		if (kurentoEvent.getCamera()!=null) {
+			orion_entity.setDeviceSource(kurentoEvent.getCamera().getId());
+		}
 		orion_entity.setMediasource(mapKurentoMediaSource(kurentoEvent.getSource()));
 		
 		return orion_entity;

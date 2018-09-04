@@ -40,12 +40,50 @@ video, #console {
 	-webkit-transition: border-color ease-in-out .15s, box-shadow
 		ease-in-out .15s;
 	transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+	margin: auto;
 }
 
 #console {
 	overflow-y: auto;
 	width: 100%;
-	height: 120px;
+	height: 370px;
+	position: relative;
+    font-family: Roboto Mono,monospace!important;
+    font-size: 14px;
+    background: #263238;
+    color: #e9eded;
+    cursor: text;
+}
+
+
+#console a, #console a:hover, #console a:link, #console a:visited {
+    text-decoration: none!important;
+    color: #607d8b;
+}
+
+#console a:visited {
+    text-decoration: underline;
+    color: #5c3566;
+}
+
+#console a:link {
+    text-decoration: underline;
+    color: #204A87;
+}
+
+#console .warning-inline {
+    color: #f4dc42;
+    font-weight: bold;
+}
+
+#console .error-inline {
+    color: #CC0000;
+    font-weight: bold;
+}
+
+#console .event-inline {
+	color: #42cbf4;
+	font-weight: bold;
 }
 
 .col-md-2 {
@@ -67,4 +105,9 @@ video, #console {
     font-family: "Montserrat", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-weight: 700;
     border: none;
+}
+
+.buttons {
+	padding: 9px;
+	margin-bottom: 25px;
 }

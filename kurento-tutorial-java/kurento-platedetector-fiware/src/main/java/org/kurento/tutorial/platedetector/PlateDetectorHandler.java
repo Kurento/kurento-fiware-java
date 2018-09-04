@@ -155,14 +155,16 @@ public class PlateDetectorHandler extends TextWebSocketHandler {
 							JsonObject response = new JsonObject();
 							response.addProperty("id", "plateDetected");
 							response.addProperty("plate", event.getPlate());
+							log.debug("plateDetectorFilter.onEvent({}) => {}", event.getPlate(), response.toString());
 							try {
 								session.sendMessage(new TextMessage(response.toString()));
 								plateDetectedEventPublisher.publish(extendedEvent);
-								
+								log.debug("");
 							} catch (OrionConnectorException e) {
 								log.warn("Could not publish event in ORION");
 								sendError(session, e.getMessage());
 							} catch (Throwable t) {
+								log.warn("Thowable: {}",t.getLocalizedMessage());
 								sendError(session, t.getMessage());
 							}
 						}
