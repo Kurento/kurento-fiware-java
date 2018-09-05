@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2017 Kurento (http://kurento.org/)
+ * (C) Copyright 2018 Kurento (http://kurento.org/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

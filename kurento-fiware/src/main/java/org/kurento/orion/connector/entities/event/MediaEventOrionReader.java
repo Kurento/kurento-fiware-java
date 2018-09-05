@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kurento (https://www.kurento.org)
+ * Copyright 2018 Kurento (https://www.kurento.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,24 +21,30 @@ import java.util.List;
 import org.kurento.orion.connector.OrionConnectorConfiguration;
 import org.kurento.orion.reader.DefaultOrionReader;
 
-public abstract class MediaEventOrionReader<T extends Object> extends
-		DefaultOrionReader<T, MediaEvent> {
+/**
+ * Extension from {@link DefaultOrionReader} specialized for {@link MediaEvent}s
+ * 
+ * @author Guiomar Tuñón (guiomar.tunon@gmail.com)
+ *
+ * @param <T>
+ */
+public abstract class MediaEventOrionReader<T extends Object> extends DefaultOrionReader<T, MediaEvent> {
 
-	public MediaEventOrionReader(OrionConnectorConfiguration config) {
-		super(config, new MediaEventJsonManager(), MediaEvent.class);
-	}
+  public MediaEventOrionReader(OrionConnectorConfiguration config) {
+	super(config, new MediaEventJsonManager(), MediaEvent.class);
+  }
 
-	/**
-	 * Get list of the mediaEvents of certain eventType 
-	 * not in the default reader.
-	 * @param eventType
-	 * @return
-	 */
-	public List<MediaEvent> readMediaEventListByEventType(String eventType){
-		
-		//configure query
-		String query = "eventType=='"+eventType+"'";
-		
-		return this.orionConnector.readEntityQueryList(MediaEvent.TYPE, query);
-	}
+  /**
+   * Get list of the mediaEvents of certain eventType not in the default reader.
+   * 
+   * @param eventType
+   * @return
+   */
+  public List<MediaEvent> readMediaEventListByEventType(String eventType) {
+
+	// configure query
+	String query = "eventType=='" + eventType + "'";
+
+	return this.orionConnector.readEntityQueryList(MediaEvent.TYPE, query);
+  }
 }

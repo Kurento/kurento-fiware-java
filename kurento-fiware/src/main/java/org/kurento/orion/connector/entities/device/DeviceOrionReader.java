@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kurento (https://www.kurento.org)
+ * Copyright 2018 Kurento (https://www.kurento.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,20 @@
 
 package org.kurento.orion.connector.entities.device;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-
 import org.kurento.orion.connector.OrionConnectorConfiguration;
 import org.kurento.orion.reader.DefaultOrionReader;
 
-public abstract class DeviceOrionReader<T extends Object> extends
-		DefaultOrionReader<T, Device> {
+/**
+ * Extension from {@link DefaultOrionReader} specialized for {@link Device}s
+ * 
+ * @author Guiomar Tuñón (guiomar.tunon@gmail.com)
+ *
+ * @param <T>
+ */
+public abstract class DeviceOrionReader<T extends Object> extends DefaultOrionReader<T, Device> {
 
-	public DeviceOrionReader(OrionConnectorConfiguration config) {
-		super(config, new DeviceJsonManager(), Device.class);
-	}
+  public DeviceOrionReader(OrionConnectorConfiguration config) {
+	super(config, new DeviceJsonManager(), Device.class);
+  }
 
 }

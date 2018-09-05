@@ -9,132 +9,138 @@ import org.kurento.orion.connector.entities.commons.GSMACommons;
 import org.kurento.orion.connector.entities.commons.MediaSource;
 import org.kurento.orion.connector.entities.device.Device;
 
-public class MediaEvent implements OrionEntity,Serializable{
+/**
+ * Media Event Data Model from
+ * https://fiware.github.io/dataModels/specs/Media/MediaEvent/schema.json
+ * 
+ * @author Guiomar Tuñón (guiomar.tunon@gmail.com)
+ *
+ */
+public class MediaEvent implements OrionEntity, Serializable {
 
-	private static final long serialVersionUID = -1602741890197466709L;
-	public static final String TYPE = "MediaEvent";
-	
-	GSMACommons _gsmaCommons;
+  private static final long serialVersionUID = -1602741890197466709L;
+  public static final String TYPE = "MediaEvent";
 
-	String type = TYPE;
-	String eventType;
-	
-	MediaSource mediasource;
-	Object data;
-	String deviceSource;
-	String[] refersTo;
-	 
+  GSMACommons _gsmaCommons;
 
-	public MediaEvent() {
-		super();
-		this._gsmaCommons = new GSMACommons();
-	}
-	
-	public MediaEvent(String id, String eventType, MediaSource mediasource,
-			Object data, String deviceSource, String[] refersTo) {
-		super();
-		this._gsmaCommons = new GSMACommons();
-		this._gsmaCommons.id = id;
-		this.eventType = eventType;
-		this.mediasource = mediasource;
-		this.data = data;
-		this.deviceSource = deviceSource;
-		this.refersTo = refersTo;
-	}
-	
-	public MediaEvent(GSMACommons _gsmaCommons, String eventType, MediaSource mediasource,
-			Object data, String deviceSource, String[] refersTo) {
-		super();
-		this._gsmaCommons = _gsmaCommons;
-		this.eventType = eventType;
-		this.mediasource = mediasource;
-		this.data = data;
-		this.deviceSource = deviceSource;
-		this.refersTo = refersTo;
-	}
+  String type = TYPE;
+  String eventType;
 
-	@Override
-	public String getId() {
-		return  _gsmaCommons.id;
-	}
+  MediaSource mediasource;
+  Object data;
+  String deviceSource;
+  String[] refersTo;
 
-	@Override
-	public String getType() {
-		return type;
-	}
+  public MediaEvent() {
+	super();
+	this._gsmaCommons = new GSMACommons();
+  }
 
-	@Override
-	public void setId(String id) {
-		_gsmaCommons.id = id;
-	}
+  public MediaEvent(String id, String eventType, MediaSource mediasource, Object data, String deviceSource,
+      String[] refersTo) {
+	super();
+	this._gsmaCommons = new GSMACommons();
+	this._gsmaCommons.id = id;
+	this.eventType = eventType;
+	this.mediasource = mediasource;
+	this.data = data;
+	this.deviceSource = deviceSource;
+	this.refersTo = refersTo;
+  }
 
-	@Override
-	public void setType(String type) {
-		this.type=type;	
-	}
+  public MediaEvent(GSMACommons _gsmaCommons, String eventType, MediaSource mediasource, Object data,
+      String deviceSource, String[] refersTo) {
+	super();
+	this._gsmaCommons = _gsmaCommons;
+	this.eventType = eventType;
+	this.mediasource = mediasource;
+	this.data = data;
+	this.deviceSource = deviceSource;
+	this.refersTo = refersTo;
+  }
 
-	public String getEventType() {
-		return eventType;
-	}
+  @Override
+  public String getId() {
+	return _gsmaCommons.id;
+  }
 
-	public void setEventType(String eventType) {
-		this.eventType = eventType;
-	}
+  @Override
+  public String getType() {
+	return type;
+  }
 
-	public MediaSource getMediasource() {
-		return mediasource;
-	}
+  @Override
+  public void setId(String id) {
+	_gsmaCommons.id = id;
+  }
 
-	public void setMediasource(MediaSource mediasource) {
-		this.mediasource = mediasource;
-	}
+  @Override
+  public void setType(String type) {
+	this.type = type;
+  }
 
-	public Object getData() {
-		return data;
-	}
+  public String getEventType() {
+	return eventType;
+  }
 
-	public void setData(Object data) {
-		this.data = data;
-	}
+  public void setEventType(String eventType) {
+	this.eventType = eventType;
+  }
 
-	public String getDeviceSource() {
-		return deviceSource;
-	}
+  public MediaSource getMediasource() {
+	return mediasource;
+  }
 
-	public void setDeviceSource(String deviceSource) {
-		this.deviceSource = deviceSource;
-	}
-	
-	public void setDeviceSource(Device deviceSource) {
-		this.deviceSource = deviceSource.getId();
-	}
+  public void setMediasource(MediaSource mediasource) {
+	this.mediasource = mediasource;
+  }
 
-	public String[] getRefersTo() {
-		return refersTo;
-	}
+  public Object getData() {
+	return data;
+  }
 
-	public void setRefersTo(String[] refersTo) {
-		this.refersTo = refersTo;
-	}
-	
-	public void setRefersTo(OrionEntity[] oes) {
-		List<String> refersTo = new ArrayList<String>();
-		for (OrionEntity oe :oes) {
-			refersTo.add(oe.getId());
-		}
-		this.refersTo = (String[]) refersTo.toArray();
-	}
-	
-	public void setRefersTo(List<OrionEntity>oes) {
-		List<String> refersTo = new ArrayList<String>();
-		for (OrionEntity oe :oes) {
-			refersTo.add(oe.getId());
-		}
-		this.refersTo = (String[]) refersTo.toArray();
-	}
+  public void setData(Object data) {
+	this.data = data;
+  }
 
-	public GSMACommons _getGsmaCommons() {
-		return _gsmaCommons;
+  public String getDeviceSource() {
+	return deviceSource;
+  }
+
+  public void setDeviceSource(String deviceSource) {
+	this.deviceSource = deviceSource;
+  }
+
+  public void setDeviceSource(Device deviceSource) {
+	this.deviceSource = deviceSource.getId();
+  }
+
+  public String[] getRefersTo() {
+	return refersTo;
+  }
+
+  public void setRefersTo(String[] refersTo) {
+	this.refersTo = refersTo;
+  }
+
+  public void setRefersTo(OrionEntity[] oes) {
+	List<String> refersTo = new ArrayList<String>();
+	for (OrionEntity oe : oes) {
+	  refersTo.add(oe.getId());
 	}
+	this.refersTo = (String[]) refersTo.toArray();
+  }
+
+  public void setRefersTo(List<OrionEntity> oes) {
+	List<String> refersTo = new ArrayList<String>();
+	for (OrionEntity oe : oes) {
+	  refersTo.add(oe.getId());
+	}
+	this.refersTo = (String[]) refersTo.toArray();
+  }
+
+  public GSMACommons _getGsmaCommons() {
+	return _gsmaCommons;
+  }
 
 }

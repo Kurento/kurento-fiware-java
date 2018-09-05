@@ -1,8 +1,23 @@
+/*
+ * Copyright 2018 Kurento (https://www.kurento.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.kurento.orion.connector.entities.device;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 
 import javax.validation.constraints.Pattern;
 
@@ -12,272 +27,275 @@ import org.kurento.orion.connector.entities.commons.GSMACommons;
 import org.kurento.orion.connector.entities.commons.LocationCommons;
 import org.kurento.orion.connector.entities.commons.PhysicalObjectCommons;
 
-public class Device implements OrionEntity,Serializable{
+/**
+ * Device Data Model from
+ * https://fiware.github.io/dataModels/specs/Device/Device/schema.json
+ * 
+ * @author Guiomar Tuñón (guiomar.tunon@gmail.com)
+ *
+ */
+public class Device implements OrionEntity, Serializable {
 
-	private static final long serialVersionUID = -1602741890197466709L;
-	
-	GSMACommons _gsmaCommons;
-	LocationCommons _locationCommons;
-	PhysicalObjectCommons _pysicalCommons;
-	DeviceCommons _deviceCommons;
-	
-	/*NGSI Entity type*/
-	String type = "Device";
-	String[] controlledAsset; 
-	String mnc;
-	String mcc;
-	
-	@Pattern(regexp="^([[:xdigit:]]{2}[:.-]?){5}[[:xdigit:]]{2}$")
-	String[] macAddress;
-	String[] ipAddress;
-	Object configuration;
-	String dateInstalled; //format": "date-time"
-	String dateFirstUsed; //format": "date-time"
-	String dateManufactured; //format": "date-time"
-	String hardwareVersion;
-	String sofwareVersion;
-	String firmwareVersion;
-	String osVersion;
-	String dateLastCalibration;
-	String serialNumber;
-	String provider;
-	String refDeviceModel;
-	Float batteryLevel;
-	String deviceState;
-	String dateLastValueReported;
-	String value;
-	
-	public Device(String id, String category, String ... controlledProperties) {
-		this._gsmaCommons = new GSMACommons();
-		this._deviceCommons = new DeviceCommons();
-		this._locationCommons = new LocationCommons();
-		this._pysicalCommons = new PhysicalObjectCommons();
-		
-		this._gsmaCommons.id = id;
-		ArrayList<String> ctlist = new ArrayList<String>();
-		ctlist.add(category);		
-		this._deviceCommons.category = ctlist.toArray(new String[0]);
-		
-		ArrayList<String> cplist = new ArrayList<String>();
-		for (String s : controlledProperties) {
-			cplist.add(s);
-		}
-		this._deviceCommons.controlledProperty = ctlist.toArray(new String[0]);
-	}
-       
-	public Device() {
-		this._gsmaCommons = new GSMACommons();
-		this._deviceCommons = new DeviceCommons();
-		this._locationCommons = new LocationCommons();
-		this._pysicalCommons = new PhysicalObjectCommons();
-	}
-	
-	@Override
-	public String getId() {
-		return  _gsmaCommons.id;
-	}
+  private static final long serialVersionUID = -1602741890197466709L;
 
-	@Override
-	public String getType() {
-		return type;
-	}
+  GSMACommons _gsmaCommons;
+  LocationCommons _locationCommons;
+  PhysicalObjectCommons _pysicalCommons;
+  DeviceCommons _deviceCommons;
 
-	@Override
-	public void setId(String id) {
-		_gsmaCommons.id = id;
-	}
+  /* NGSI Entity type */
+  String type = "Device";
+  String[] controlledAsset;
+  String mnc;
+  String mcc;
 
-	@Override
-	public void setType(String type) {
-		this.type=type;	
-	}
+  @Pattern(regexp = "^([[:xdigit:]]{2}[:.-]?){5}[[:xdigit:]]{2}$")
+  String[] macAddress;
+  String[] ipAddress;
+  Object configuration;
+  String dateInstalled; // format": "date-time"
+  String dateFirstUsed; // format": "date-time"
+  String dateManufactured; // format": "date-time"
+  String hardwareVersion;
+  String sofwareVersion;
+  String firmwareVersion;
+  String osVersion;
+  String dateLastCalibration;
+  String serialNumber;
+  String provider;
+  String refDeviceModel;
+  Float batteryLevel;
+  String deviceState;
+  String dateLastValueReported;
+  String value;
 
-	
+  public Device(String id, String category, String... controlledProperties) {
+	this._gsmaCommons = new GSMACommons();
+	this._deviceCommons = new DeviceCommons();
+	this._locationCommons = new LocationCommons();
+	this._pysicalCommons = new PhysicalObjectCommons();
 
-	public GSMACommons _getGsmaCommons() {
-		return _gsmaCommons;
-	}
+	this._gsmaCommons.id = id;
+	ArrayList<String> ctlist = new ArrayList<String>();
+	ctlist.add(category);
+	this._deviceCommons.category = ctlist.toArray(new String[0]);
 
-	public LocationCommons _getLocationCommons() {
-		return _locationCommons;
+	ArrayList<String> cplist = new ArrayList<String>();
+	for (String s : controlledProperties) {
+	  cplist.add(s);
 	}
+	this._deviceCommons.controlledProperty = ctlist.toArray(new String[0]);
+  }
 
-	public PhysicalObjectCommons _getPysicalCommons() {
-		return _pysicalCommons;
-	}
+  public Device() {
+	this._gsmaCommons = new GSMACommons();
+	this._deviceCommons = new DeviceCommons();
+	this._locationCommons = new LocationCommons();
+	this._pysicalCommons = new PhysicalObjectCommons();
+  }
 
-	public DeviceCommons _getDeviceCommons() {
-		return _deviceCommons;
-	}
+  @Override
+  public String getId() {
+	return _gsmaCommons.id;
+  }
 
-	public String[] getControlledAsset() {
-		return controlledAsset;
-	}
+  @Override
+  public String getType() {
+	return type;
+  }
 
-	public void setControlledAsset(String[] controlledAsset) {
-		this.controlledAsset = controlledAsset;
-	}
+  @Override
+  public void setId(String id) {
+	_gsmaCommons.id = id;
+  }
 
-	public String getMnc() {
-		return mnc;
-	}
+  @Override
+  public void setType(String type) {
+	this.type = type;
+  }
 
-	public void setMnc(String mnc) {
-		this.mnc = mnc;
-	}
+  public GSMACommons _getGsmaCommons() {
+	return _gsmaCommons;
+  }
 
-	public String getMcc() {
-		return mcc;
-	}
+  public LocationCommons _getLocationCommons() {
+	return _locationCommons;
+  }
 
-	public void setMcc(String mcc) {
-		this.mcc = mcc;
-	}
+  public PhysicalObjectCommons _getPysicalCommons() {
+	return _pysicalCommons;
+  }
 
-	public String[] getMacAddress() {
-		return macAddress;
-	}
+  public DeviceCommons _getDeviceCommons() {
+	return _deviceCommons;
+  }
 
-	public void setMacAddress(String[] macAddress) {
-		this.macAddress = macAddress;
-	}
+  public String[] getControlledAsset() {
+	return controlledAsset;
+  }
 
-	public String[] getIpAddress() {
-		return ipAddress;
-	}
+  public void setControlledAsset(String[] controlledAsset) {
+	this.controlledAsset = controlledAsset;
+  }
 
-	public void setIpAddress(String[] ipAddress) {
-		this.ipAddress = ipAddress;
-	}
+  public String getMnc() {
+	return mnc;
+  }
 
-	public Object getConfiguration() {
-		return configuration;
-	}
+  public void setMnc(String mnc) {
+	this.mnc = mnc;
+  }
 
-	public void setConfiguration(Object configuration) {
-		this.configuration = configuration;
-	}
+  public String getMcc() {
+	return mcc;
+  }
 
-	public String getDateInstalled() {
-		return dateInstalled;
-	}
+  public void setMcc(String mcc) {
+	this.mcc = mcc;
+  }
 
-	public void setDateInstalled(String dateInstalled) {
-		this.dateInstalled = dateInstalled;
-	}
+  public String[] getMacAddress() {
+	return macAddress;
+  }
 
-	public String getDateFirstUsed() {
-		return dateFirstUsed;
-	}
+  public void setMacAddress(String[] macAddress) {
+	this.macAddress = macAddress;
+  }
 
-	public void setDateFirstUsed(String dateFirstUsed) {
-		this.dateFirstUsed = dateFirstUsed;
-	}
+  public String[] getIpAddress() {
+	return ipAddress;
+  }
 
-	public String getDateManufactured() {
-		return dateManufactured;
-	}
+  public void setIpAddress(String[] ipAddress) {
+	this.ipAddress = ipAddress;
+  }
 
-	public void setDateManufactured(String dateManufactured) {
-		this.dateManufactured = dateManufactured;
-	}
+  public Object getConfiguration() {
+	return configuration;
+  }
 
-	public String getHardwareVersion() {
-		return hardwareVersion;
-	}
+  public void setConfiguration(Object configuration) {
+	this.configuration = configuration;
+  }
 
-	public void setHardwareVersion(String hardwareVersion) {
-		this.hardwareVersion = hardwareVersion;
-	}
+  public String getDateInstalled() {
+	return dateInstalled;
+  }
 
-	public String getSofwareVersion() {
-		return sofwareVersion;
-	}
+  public void setDateInstalled(String dateInstalled) {
+	this.dateInstalled = dateInstalled;
+  }
 
-	public void setSofwareVersion(String sofwareVersion) {
-		this.sofwareVersion = sofwareVersion;
-	}
+  public String getDateFirstUsed() {
+	return dateFirstUsed;
+  }
 
-	public String getFirmwareVersion() {
-		return firmwareVersion;
-	}
+  public void setDateFirstUsed(String dateFirstUsed) {
+	this.dateFirstUsed = dateFirstUsed;
+  }
 
-	public void setFirmwareVersion(String firmwareVersion) {
-		this.firmwareVersion = firmwareVersion;
-	}
+  public String getDateManufactured() {
+	return dateManufactured;
+  }
 
-	public String getOsVersion() {
-		return osVersion;
-	}
+  public void setDateManufactured(String dateManufactured) {
+	this.dateManufactured = dateManufactured;
+  }
 
-	public void setOsVersion(String osVersion) {
-		this.osVersion = osVersion;
-	}
+  public String getHardwareVersion() {
+	return hardwareVersion;
+  }
 
-	public String getDateLastCalibration() {
-		return dateLastCalibration;
-	}
+  public void setHardwareVersion(String hardwareVersion) {
+	this.hardwareVersion = hardwareVersion;
+  }
 
-	public void setDateLastCalibration(String dateLastCalibration) {
-		this.dateLastCalibration = dateLastCalibration;
-	}
+  public String getSofwareVersion() {
+	return sofwareVersion;
+  }
 
-	public String getSerialNumber() {
-		return serialNumber;
-	}
+  public void setSofwareVersion(String sofwareVersion) {
+	this.sofwareVersion = sofwareVersion;
+  }
 
-	public void setSerialNumber(String serialNumber) {
-		this.serialNumber = serialNumber;
-	}
+  public String getFirmwareVersion() {
+	return firmwareVersion;
+  }
 
-	public String getProvider() {
-		return provider;
-	}
+  public void setFirmwareVersion(String firmwareVersion) {
+	this.firmwareVersion = firmwareVersion;
+  }
 
-	public void setProvider(String provider) {
-		this.provider = provider;
-	}
+  public String getOsVersion() {
+	return osVersion;
+  }
 
-	public String getRefDeviceModel() {
-		return refDeviceModel;
-	}
+  public void setOsVersion(String osVersion) {
+	this.osVersion = osVersion;
+  }
 
-	public void setRefDeviceModel(String refDeviceModel) {
-		this.refDeviceModel = refDeviceModel;
-	}
+  public String getDateLastCalibration() {
+	return dateLastCalibration;
+  }
 
-	public Float getBatteryLevel() {
-		return batteryLevel;
-	}
+  public void setDateLastCalibration(String dateLastCalibration) {
+	this.dateLastCalibration = dateLastCalibration;
+  }
 
-	public void setBatteryLevel(Float batteryLevel) {
-		this.batteryLevel = batteryLevel;
-	}
+  public String getSerialNumber() {
+	return serialNumber;
+  }
 
-	public String getDeviceState() {
-		return deviceState;
-	}
+  public void setSerialNumber(String serialNumber) {
+	this.serialNumber = serialNumber;
+  }
 
-	public void setDeviceState(String deviceState) {
-		this.deviceState = deviceState;
-	}
+  public String getProvider() {
+	return provider;
+  }
 
-	public String getDateLastValueReported() {
-		return dateLastValueReported;
-	}
+  public void setProvider(String provider) {
+	this.provider = provider;
+  }
 
-	public void setDateLastValueReported(String dateLastValueReported) {
-		this.dateLastValueReported = dateLastValueReported;
-	}
+  public String getRefDeviceModel() {
+	return refDeviceModel;
+  }
 
-	public String getValue() {
-		return value;
-	}
+  public void setRefDeviceModel(String refDeviceModel) {
+	this.refDeviceModel = refDeviceModel;
+  }
 
-	public void setValue(String value) {
-		this.value = value;
-	}
-	
-	
+  public Float getBatteryLevel() {
+	return batteryLevel;
+  }
+
+  public void setBatteryLevel(Float batteryLevel) {
+	this.batteryLevel = batteryLevel;
+  }
+
+  public String getDeviceState() {
+	return deviceState;
+  }
+
+  public void setDeviceState(String deviceState) {
+	this.deviceState = deviceState;
+  }
+
+  public String getDateLastValueReported() {
+	return dateLastValueReported;
+  }
+
+  public void setDateLastValueReported(String dateLastValueReported) {
+	this.dateLastValueReported = dateLastValueReported;
+  }
+
+  public String getValue() {
+	return value;
+  }
+
+  public void setValue(String value) {
+	this.value = value;
+  }
 
 }

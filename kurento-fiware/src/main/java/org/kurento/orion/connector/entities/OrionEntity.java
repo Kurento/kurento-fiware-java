@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kurento (https://www.kurento.org)
+ * Copyright 2018 Kurento (https://www.kurento.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,19 +19,14 @@ package org.kurento.orion.connector.entities;
 /**
  * Interface common to all objects that represent an Orion entity
  */
-public interface OrionEntity{
+public interface OrionEntity {
 
-	public String getId();
+  public String getId();
 
-	public String getType();
-		
-	public void setId(String id);
+  public String getType();
 
-	public void setType(String type);
-	
-	/*public default boolean equals(OrionEntity o) {
-		String just = "checking method";
-		return this.getId().equals(o.getId());
-	}*/
+  public void setId(String id);
+
+  public void setType(String type);
 
 }

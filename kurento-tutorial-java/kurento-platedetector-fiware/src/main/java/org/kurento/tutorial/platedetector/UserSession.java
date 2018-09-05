@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2016 Kurento (http://kurento.org/)
+ * (C) Copyright 2018 Kurento (http://kurento.org/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,26 +29,26 @@ public class UserSession {
   }
 
   public WebRtcEndpoint getWebRtcEndpoint() {
-    return webRtcEndpoint;
+	return webRtcEndpoint;
   }
 
   public void setWebRtcEndpoint(WebRtcEndpoint webRtcEndpoint) {
-    this.webRtcEndpoint = webRtcEndpoint;
+	this.webRtcEndpoint = webRtcEndpoint;
   }
 
   public MediaPipeline getMediaPipeline() {
-    return mediaPipeline;
+	return mediaPipeline;
   }
 
   public void setMediaPipeline(MediaPipeline mediaPipeline) {
-    this.mediaPipeline = mediaPipeline;
+	this.mediaPipeline = mediaPipeline;
   }
 
   public void addCandidate(IceCandidate candidate) {
-    webRtcEndpoint.addIceCandidate(candidate);
+	webRtcEndpoint.addIceCandidate(candidate);
   }
 
   public void release() {
-    this.mediaPipeline.release();
+	this.mediaPipeline.release();
   }
 }

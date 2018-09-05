@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kurento (https://www.kurento.org)
+ * Copyright 2018 Kurento (https://www.kurento.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,18 @@ package org.kurento.orion.connector.entities.device;
 import org.kurento.orion.connector.OrionConnectorConfiguration;
 import org.kurento.orion.publisher.DefaultOrionPublisher;
 
+/**
+ * Extension from {@link DefaultOrionPublisher} specialized for {@link Device}s
+ * 
+ * @author Guiomar Tuñón (guiomar.tunon@gmail.com)
+ *
+ * @param <T>
+ */
+public abstract class DeviceOrionPublisher<T extends Object> extends DefaultOrionPublisher<T, Device> {
 
-public abstract class DeviceOrionPublisher<T extends Object> extends
-		DefaultOrionPublisher<T, Device> {
+  public DeviceOrionPublisher(OrionConnectorConfiguration config) {
+	super(config, new DeviceJsonManager(), Device.class);
 
-	public DeviceOrionPublisher(OrionConnectorConfiguration config) {
-		super(config, new DeviceJsonManager(), Device.class);
-		
-	}
+  }
 
 }

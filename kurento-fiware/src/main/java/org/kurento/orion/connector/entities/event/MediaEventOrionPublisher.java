@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kurento (https://www.kurento.org)
+ * Copyright 2018 Kurento (https://www.kurento.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,23 +20,29 @@ import org.kurento.orion.connector.OrionConnectorConfiguration;
 import org.kurento.orion.publisher.DefaultOrionPublisher;
 import org.kurento.orion.publisher.OrionPublisherForbidenOperationException;
 
+/**
+ * Extension from {@link DefaultOrionPublisher} specialized for
+ * {@link MediaEvent}s
+ * 
+ * @author Guiomar Tuñón (guiomar.tunon@gmail.com)
+ *
+ * @param <T>
+ */
+public abstract class MediaEventOrionPublisher<T extends Object> extends DefaultOrionPublisher<T, MediaEvent> {
 
-public abstract class MediaEventOrionPublisher<T extends Object> extends
-		DefaultOrionPublisher<T, MediaEvent> {
+  public MediaEventOrionPublisher(OrionConnectorConfiguration config) {
+	super(config, new MediaEventJsonManager(), MediaEvent.class);
 
-	public MediaEventOrionPublisher(OrionConnectorConfiguration config) {
-		super(config, new MediaEventJsonManager(), MediaEvent.class);
-		
-	}
-	
-	@Override
-	public void update (T entity) {
-		throw new OrionPublisherForbidenOperationException("Events cannot be updated");
-	}
-	
-	@Override
-	public void update (MediaEvent event) {
-		throw new OrionPublisherForbidenOperationException("Events cannot be updated");
-	}
+  }
+
+  @Override
+  public void update(T entity) {
+	throw new OrionPublisherForbidenOperationException("Events cannot be updated");
+  }
+
+  @Override
+  public void update(MediaEvent event) {
+	throw new OrionPublisherForbidenOperationException("Events cannot be updated");
+  }
 
 }

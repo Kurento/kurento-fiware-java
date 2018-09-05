@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kurento (https://www.kurento.org)
+ * Copyright 2018 Kurento (https://www.kurento.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,20 +37,20 @@ public class Application implements WebSocketConfigurer {
 
   @Bean
   public PlateDetectorHandler handler() {
-    return new PlateDetectorHandler();
+	return new PlateDetectorHandler();
   }
 
   @Bean
   public KurentoClient kurentoClient() {
-    return KurentoClient.create();
+	return KurentoClient.create();
   }
 
   @Override
   public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-    registry.addHandler(handler(), "/platedetector");
+	registry.addHandler(handler(), "/platedetector");
   }
 
   public static void main(String[] args) throws Exception {
-    SpringApplication.run(Application.class, args);
+	SpringApplication.run(Application.class, args);
   }
 }
