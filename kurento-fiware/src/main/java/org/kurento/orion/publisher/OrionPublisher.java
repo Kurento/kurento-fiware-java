@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kurento (https://www.kurento.org)
+ * Copyright 2018 Kurento (https://www.kurento.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,19 @@ import org.kurento.orion.connector.entities.OrionEntity;
 
 public interface OrionPublisher<T, O extends OrionEntity> {
 
-	public void publish(T entity);
+  public O publish(T entity);
 
-	public void publish(O orionEntity);
+  public O publish(O orionEntity);
 
-	public O mapEntityToOrionEntity(T entity);
+  public void update(T entity);
+
+  public void update(O orionEntity);
+
+  public void delete(T entity);
+
+  public void delete(O orionEntity);
+
+  public void delete(String id);
+
+  public O mapEntityToOrionEntity(T entity);
 }

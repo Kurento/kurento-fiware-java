@@ -1,121 +1,284 @@
-<!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-<meta charset="utf-8">
-<meta http-equiv="cache-control" content="no-cache">
-<meta http-equiv="pragma" content="no-cache">
-<meta http-equiv="expires" content="0">
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="shortcut icon" href="img/kurento.png" type="image/png" />
 
-<link rel="stylesheet"
-	href="webjars/bootstrap/dist/css/bootstrap.min.css">
-<link rel="stylesheet"
-	href="webjars/ekko-lightbox/dist/ekko-lightbox.min.css">
-<link rel="stylesheet" href="css/kurento.css">
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
 
-<script src="webjars/jquery/dist/jquery.min.js"></script>
-<script src="webjars/bootstrap/dist/js/bootstrap.min.js"></script>
-<script src="webjars/ekko-lightbox/dist/ekko-lightbox.min.js"></script>
-<script src="webjars/adapter.js/adapter.js"></script>
+   	<title>User Registry</title>
 
-<script src="js/kurento-utils.js"></script>
-<script src="js/console.js"></script>
-<script src="js/index.js"></script>
-<title>Kurento Tutorial: WebRTC Plate Detector</title>
+    <!-- Bootstrap Core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet"/> 
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+	<!--  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"/> -->
+	
+	<!-- Theme CSS -->
+    <!-- <link href="css/freelancer.css" rel="stylesheet"/> -->
+    
+ 	<link href="css/kurento.css" rel="stylesheet"/>
+ 	
+ 	<!-- <script src="js/registry.js"></script> -->
+ 	
+    <!-- Custom Fonts -->
+    <link href="vendor/materialdesignicon/css/material-design-icons.css" rel="stylesheet"/>
+	<link href="vendor/socialbuttons/css/bootstrap-social.css" rel="stylesheet"/>
+	<link href="vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet"/>
+    
+    <!-- angular -->
+    <script type="text/javascript" src="webjars/angularjs/1.7.0/angular.js"></script>
+    <script type="text/javascript" src="webjars/angularjs/1.7.0/angular-route.js"></script>
+    <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-2.5.0.js"></script>
+    
+    <!-- jquery -->
+    <script type="text/javascript" src="vendor/jquery/jquery.min.js"></script>
+    
+    <!-- detect browser -->
+    <script type="text/javascript" src="js/detect.js"></script>
+    
+    <!-- kurento -->
+    <script type="text/javascript" src="js/index.js"></script>
+    <script type="text/javascript" src="js/console.js"></script>
+    <script type="text/javascript" src=/js/kurento-utils.min.js></script>
+    
+    <script type="text/javascript">		
+    angular.module("app", ['ui.bootstrap'])
+    .constant("CSRF_TOKEN", '{{ csrf_token() }}')
+	.config(
+			function($httpProvider) {
+				$httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+			})
+	.controller(
+		"home", 
+		['$location', '$scope', '$http', 
+		function($location, $scope, $http, CSRF_TOKEN){
+			var self = this;
+			self.registered = false;
+			self.agentInfo = detect.parse(navigator.userAgent);
+			console.log($location.absUrl().indexOf("error="))
+			if ($location && $location.absUrl().indexOf("error=unregistered") >= 0) {
+				self.registered = false;
+				self.error = true;
+				$('#error').text("The device couldn't be registered");
+			}
+			if ($location && $location.absUrl().indexOf("error=generic") >= 0) {
+				self.error = true;
+				$('#error').text("An undefinend error has occured");
+			}
+			self.newCamera = function() {
+					//TODO: get data from 
+ 					var data = JSON.stringify(self.agentInfo);	     					
+ 					var formData = new FormData(document.querySelector('#newCamera'))
+ 					$http.post('camera/new', formData)
+     				    .then(function(data) {
+     				    	if (data.data.result == "OK"){
+     				    		page_console.event("[NEW CAMERA]success device:" + data.data.device.id);
+         				    	self.registered = true;
+         				    	self.device_id=data.data.device.id;
+     				    	}else{
+     				    		page_console.error("[NEW CAMERA]result error");
+     				    	}})
+     				    	.catch(function() {
+     				    		page_console.error("[NEW CAMERA] error");
+     				    	})
+     						.finally(function(){
+     							page_console.log("end newCamera");
+     						});	     	
+ 				    };
+ 			self.start = function(){
+ 				
+ 				start();
+ 				
+ 				$http.post('device/activate/'+self.device_id)
+				    .then(function(data) {
+				    	if (data.data.result == "OK"){
+				    		page_console.event("[START PROCESSING]success device:"+data.data.device.id);
+				    	}else{
+				    		page_console.error("[START PROCESSING] result error");
+				    	}})
+				    	.catch(function() {
+				    		page_console.error("[START PROCESSING] error");
+				    	})
+						.finally(function(){
+							page_console.log("[START PROCESSING] end device/activate");
+						});	     	
+			 };
+			 self.stop = function(){
+	 				
+	 				stop();
+	 				
+	 				$http.post('device/pause/'+self.device_id)
+					    .then(function(data) {
+					    	if (data.data.result == "OK"){
+					    		page_console.event("[STOP PROCESSING] success pause device:"+data.data.device.id);
+					    	}else{
+					    		page_console.error("[STOP PROCESSING]result error");
+					    	}})
+					    	.catch(function() {
+					    		page_console.log(" [STOP PROCESSING] error");
+					    	})
+							.finally(function(){
+								page_console.log("[STOP PROCESSING] device/activate");
+							});	     	
+				 };
+		}]); 
+	</script>
+    
 </head>
 
-<body>
-	<header>
-		<div class="navbar navbar-inverse navbar-fixed-top">
-			<div class="container">
-				<div class="navbar-header">
-					<button type="button" class="navbar-toggle" data-toggle="collapse"
-						data-target=".navbar-collapse"></button>
-					<a class="navbar-brand" href=".">Kurento Tutorial</a>
-				</div>
-				<div class="collapse navbar-collapse"
-					id="bs-example-navbar-collapse-1">
-					<ul class="nav navbar-nav navbar-right">
-						<li><a
-							href="https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-platedetector"><span
-								class="glyphicon glyphicon-file"></span> Source Code</a></li>
-					</ul>
-				</div>
-			</div>
-		</div>
-	</header>
-	<div class="container">
-		<div class="page-header">
-			<h1>Tutorial: WebRTC Plate Detector Filter</h1>
-			<p>
-				This application shows a <i>WebRtcEndpoint</i> connected to itself
-				(loopback) with a <i>PlateDetector</i> filter in the middle (take a
-				look to the <a href="img/pipeline.png" data-toggle="lightbox"
-					data-title="Plate Detector Media Pipeline"
-					data-footer="WebRtcEnpoint in loopback with a filter (PlateDetectorFilter)">Media
-					Pipeline</a>). To run this demo follow these steps:
-			</p>
-			<ol>
-				<li>Open this page with a browser compliant with WebRTC
-					(Chrome, Firefox).</li>
-				<li>Click on <i>Start</i> button.
-				<li>Grant the access to the camera and microphone. After the
-					SDP negotiation the loopback should start.
-				<li>Click on <i>Stop</i> to finish the communication.
-				</li>
-			</ol>
-		</div>
-		<div class="row">
-			<div class="col-md-5">
-				<h3>Local stream</h3>
-				<video id="videoInput" autoplay width="480px" height="360px"
-					poster="img/webrtc.png"></video>
-			</div>
-			<div class="col-md-2">
-				<a id="start" href="#" class="btn btn-success"
-					onclick="start(); return false;"><span
-					class="glyphicon glyphicon-play"></span> Start</a><br /> <br /> <a
-					id="stop" href="#" class="btn btn-danger"
-					onclick="stop(); return false;"><span
-					class="glyphicon glyphicon-stop"></span> Stop</a>
-			</div>
-			<div class="col-md-5">
-				<h3>Remote stream</h3>
-				<video id="videoOutput" autoplay width="480px" height="360px"
-					poster="img/webrtc.png"></video>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-md-12">
-				<label class="control-label" for="console">Console</label>
-				<div id="console"></div>
-			</div>
-		</div>
-	</div>
+<body id="page-top" class="index" data-ng-app="app" data-ng-controller="home as home">
 
-	<footer>
-		<div class="foot-fixed-bottom">
-			<div class="container text-center">
-				<hr />
-				<div class="row">&copy; 2014 Kurento</div>
-				<div class="row">
-					<div class="col-md-4">
+    <!-- Navigation -->
+    <nav id="mainNav" class="navbar navbar-default navbar-fixed-top navbar-custom">
+        <div class="container">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span> Menu <i class="fa fa-bars"></i>
+                </button>
+                <a class="navbar-brand" href="#page-top">Orion + Kurento Tutorial</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+	        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+	             <ul class="nav navbar-nav navbar-right">
+						<li>
+							<a href="https://github.com/Kurento/kurento-fiware-java/tree/master/kurento-tutorial-java/kurento-platedetector-fiware">
+								<span class="glyphicon glyphicon-file"></span> Source Code</a>
+						</li>
+					</ul> 
+            </div>  
+            <!-- /.navbar-collapse -->
+            <div id="error" class="alert alert-danger" data-ng-show="home.error" data-ng-cloak class="ng-cloak"></div>
+            
+            <div id="alert" class="alert alert-warning" data-ng-show="home.warn" data-ng-cloak class="ng-cloak"></div>
+
+			<div id="alert" class="alert alert-info" data-ng-show="home.info" data-ng-cloak class="ng-cloak"></div>
+        </div>
+        <!-- /.container-fluid -->
+    </nav>
+
+    <!-- Header -->
+    <header>   
+        <div class="container" id="instructions" tabindex="-1">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="intro-text">
+                        <h1 class="name">Tutorial: WebRTC Plate Detector with Orion Integration</h1>
+                        <p>This application shows a WebRtcEndpoint connected to itself (loopback) with a PlateDetector filter in the middle (take a look to the Media Pipeline) Whenever a plate is detected it is processed and archived in Orion. To run this demo follow these steps:</p>
+						<ol>
+							<li>Open this page with a browser compliant with WebRTC (Chrome, Firefox).</li>
+							<li>Register a new device (webcam) by pressing Register new Cam</li>
+							<li>Press Start to start processing plates with the camera</li>
+						</ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+	
+		
+
+    <section id="maincontainer">
+        <div class="container" >
+            <div class="row">
+                <div class="col-lg-6 text-center">
+                    <h3>Cam</h3>
+                    <hr class="star-light"></hr>
+                </div>
+				 <div class="col-lg-6 text-center">
+                    <h3>Console</h3>
+                    <hr class="star-light"></hr>
+                </div>
+            </div>
+            <div class="row ">
+            	<div class="container col-lg-6 text-center" data-ng-show="!home.registered" >
+            		<!-- Button for new cam -->
+ 					<a id="register" href="#" class="btn btn-default center" data-ng-click="home.newCamera()">
+						<span class="glyphicon glyphicon-webcam"></span> Register new Cam </a>
+				</div>
+				<div class="container col-lg-6 text-center" data-ng-show="home.registered">
+					<!-- camera initialized -->
+					<div class="row video">
+						<video id="videoInput" autoplay width="480px" height="360px"
+							poster="img/webrtc.png"></video>
+					</div>
+					<div class="row buttons">
+						<div class="col-md-6">
+							<a id="start" href="#" class="btn btn-success " data-ng-click="home.start()">
+								<span class="glyphicon glyphicon-play"></span> Start </a>
+						</div>
+						<div class="col-md-6">
+							<a id="stop" href="#" class="btn btn-danger" data-ng-click="home.stop()">
+								<span class="glyphicon glyphicon-stop"></span> Stop </a>
+						</div>
+					</div>
+				</div>	
+				<div class="container col-lg-6">
+					<div id="console"></div>
+				</div>	
+			</div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="text-center">
+        <div class="footer-above">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-3">
 						<a href="http://www.urjc.es"><img src="img/urjc.gif"
 							alt="Universidad Rey Juan Carlos" height="50px" /></a>
 					</div>
-					<div class="col-md-4">
+					<div class="col-md-3">
 						<a href="http://www.kurento.org"><img src="img/kurento.png"
 							alt="Kurento" height="50px" /></a>
 					</div>
-					<div class="col-md-4">
+					<div class="col-md-3">
+						<a href="https://www.fiware.org"><img src="img/fiware.png"
+							alt="Fiware" height="50px" /></a>
+					</div>
+					<div class="col-md-3">
 						<a href="http://www.naevatec.com"><img src="img/naevatec.png"
 							alt="Naevatec" height="50px" /></a>
 					</div>
-				</div>
-			</div>
-		</div>
-	</footer>
+                </div>
+            </div>
+        </div>
+        <div class="footer-below">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        Copyright &copy; <a href="http://www.kurento.org"> Kurento </a>	2017
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+	
+    <!-- jQuery -->
+    <script src="vendor/jquery/jquery.min.js"></script>
+
+    <!-- Plugin JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+
+    <!-- Contact Form JavaScript -->
+    <script src="js/jqBootstrapValidation.js"></script>
+
 
 </body>
+
 </html>

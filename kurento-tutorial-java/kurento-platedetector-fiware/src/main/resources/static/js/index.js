@@ -20,14 +20,14 @@ var videoInput;
 var videoOutput;
 var webRtcPeer;
 var state = null;
-
+var page_console; 
 const I_CAN_START = 0;
 const I_CAN_STOP = 1;
 const I_AM_STARTING = 2;
 
 window.onload = function() {
 	console.log("Page loaded ...");
-	console = new Console('console', console);
+	page_console = new Console('console', console);
 	videoInput = document.getElementById('videoInput');
 	videoOutput = document.getElementById('videoOutput');
 	setState(I_CAN_START);
@@ -39,7 +39,7 @@ window.onbeforeunload = function() {
 
 ws.onmessage = function(message) {
 	var parsedMessage = JSON.parse(message.data);
-	console.info('Received message: ' + message.data);
+	page_console.info('Received message: ' + message.data);
 
 	switch (parsedMessage.id) {
 	case 'startResponse':
@@ -69,16 +69,17 @@ ws.onmessage = function(message) {
 }
 
 function start() {
-	console.log("Starting video call ...")
+	page_console.log("Starting video call ...")
 	// Disable start button
 	setState(I_AM_STARTING);
-	showSpinner(videoInput, videoOutput);
-
+	//showSpinner(videoInput, videoOutput);
+	showSpinner(videoInput);
+	
 	console.log("Creating WebRtcPeer and generating local sdp offer ...");
 
 	var options = {
 		      localVideo: videoInput,
-		      remoteVideo: videoOutput,
+		      //remoteVideo: videoOutput,
 			  onicecandidate: onIceCandidate
 		    }
 	webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options,
@@ -92,7 +93,7 @@ function start() {
 
 function onOffer(error, offerSdp) {
 	if (error) return console.error ("Error generating the offer");
-	console.info('Invoking SDP offer callback function ' + location.host);
+	page_console.info('Invoking SDP offer callback function ' + location.host);
 	var message = {
 		id : 'start',
 		sdpOffer : offerSdp
@@ -101,11 +102,11 @@ function onOffer(error, offerSdp) {
 }
 
 function onError(error) {
-	console.error(error);
+	page_console.error(error);
 }
 
 function onIceCandidate(candidate) {
-	  console.log("Local candidate" + JSON.stringify(candidate));
+	page_console.log("Local candidate" + JSON.stringify(candidate));
 
 	  var message = {
 	    id: 'onIceCandidate',
@@ -116,14 +117,14 @@ function onIceCandidate(candidate) {
 
 function startResponse(message) {
 	setState(I_CAN_STOP);
-	console.log("SDP answer received from server. Processing ...");
+	page_console.log("SDP answer received from server. Processing ...");
 	webRtcPeer.processAnswer (message.sdpAnswer, function (error) {
 		if (error) return console.error (error);
 	});
 }
 
 function plateDetected(message) {
-	console.log("License plate detected " + message.plate);
+	page_console.event("License plate detected " + message.plate);
 }
 
 function stop() {
@@ -138,7 +139,8 @@ function stop() {
 		}
 		sendMessage(message);
 	}
-	hideSpinner(videoInput, videoOutput);
+	//hideSpinner(videoInput, videoOutput);
+	hideSpinner(videoInput)
 }
 
 function setState(nextState) {

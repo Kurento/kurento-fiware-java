@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
+ * (C) Copyright 2018 Kurento (http://kurento.org/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
  * Object that piggy-back the browser console and show their messages on a DIV
  * 
  * Inspired by Node.js ClIM module (https://github.com/epeli/node-clim)
+ * Based on previous version of console.js
  * 
  * @constructor
  * 
@@ -30,12 +31,12 @@
 function Console(id, console) {
 	var div = document.getElementById(id);
 
-	function createMessage(msg, color) {
+	function createMessage(msg, clazz) {
 		// Sanitize the input
 		msg = msg.toString().replace(/</g, '&lt;');
 		var span = document.createElement('SPAN');
-		if (color != undefined) {
-			span.style.color = color;
+		if (clazz != undefined) {
+			span.classList.add(clazz);
 		}
 		span.appendChild(document.createTextNode(msg));
 		return span;
@@ -55,7 +56,8 @@ function Console(id, console) {
 	 */
 	this.error = function(msg) {
 		console.error(msg);
-		this._append(createMessage(msg, "#FF0000"));
+		this._append(createMessage(msg, "error-inline"));
+		div.scrollTop = div.scrollHeight;
 	};
 
 	/**
@@ -66,9 +68,21 @@ function Console(id, console) {
 	 */
 	this.warn = function(msg) {
 		console.warn(msg);
-		this._append(createMessage(msg, "#FFA500"));
+		this._append(createMessage(msg, "warning-inline"));
+		div.scrollTop = div.scrollHeight;
 	};
 
+	/**
+	 * Show an info highlighted message both on browser console and on defined DIV
+	 * 
+	 * @param msg:
+	 *            message or object to be shown
+	 */
+	this.event = function(msg){
+		console.info(msg);
+		this._append(createMessage(msg, "event-inline" ));
+		div.scrollTop = div.scrollHeight;
+	}
 	/**
 	 * Show an Info message both on browser console and on defined DIV
 	 * 

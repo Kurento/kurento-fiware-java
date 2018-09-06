@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2014 Kurento (http://kurento.org/)
+ * (C) Copyright 2018 Kurento (http://kurento.org/)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,9 +31,8 @@ import org.kurento.module.platedetector.PlateDetectedEvent;
 import org.kurento.module.platedetector.PlateDetectorFilter;
 import org.kurento.orion.connector.OrionConnectorConfiguration;
 import org.kurento.orion.connector.OrionConnectorException;
-import org.kurento.orion.publisher.EventOrionPublisher;
-import org.kurento.tutorial.platedetector.orion.models.datamodels.MediaEventDataModel;
-import org.kurento.tutorial.platedetector.orion.models.datamodels.VehicleDataModel;
+import org.kurento.tutorial.platedetector.models.DevicePlateDetectedEvent;
+import org.kurento.tutorial.platedetector.orion.PlateDetectedEventPublisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,190 +45,151 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
 /**
- * Plate Detector handler (application and media logic).
+ * Plate Detector handler (application, media logic, orion logic).
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author David Fernandez (d.fernandezlop@gmail.com)
- * @since 5.0.0
+ * @author Guiomar Tuñón (guiomar.tunon@gmail.com)
  */
 public class PlateDetectorHandler extends TextWebSocketHandler {
 
-	private final Logger log = LoggerFactory.getLogger(PlateDetectorHandler.class);
-	private static final Gson gson = new GsonBuilder().create();
+  private final Logger log = LoggerFactory.getLogger(PlateDetectorHandler.class);
+  private static final Gson gson = new GsonBuilder().create();
 
-	private final ConcurrentHashMap<String, UserSession> users = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, UserSession> users = new ConcurrentHashMap<>();
 
-	@Autowired
-	private KurentoClient kurento;
+  @Autowired
+  private KurentoClient kurento;
 
-	@Autowired
-	private VehicleService vehicleService;
+  @Override
+  public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+	JsonObject jsonMessage = gson.fromJson(message.getPayload(), JsonObject.class);
 
-	@Override
-	public void handleTextMessage(WebSocketSession session, TextMessage message)
-			throws Exception {
-		JsonObject jsonMessage = gson.fromJson(message.getPayload(), JsonObject.class);
+	log.debug("Incoming message: {}", jsonMessage);
 
-		log.debug("Incoming message: {}", jsonMessage);
+	switch (jsonMessage.get("id").getAsString()) {
+	  case "start":
+		start(session, jsonMessage);
+		break;
 
-		switch (jsonMessage.get("id").getAsString()) {
-		case "start":
-			start(session, jsonMessage);
-			break;
-
-		case "stop": {
-			UserSession user = users.remove(session.getId());
-			if (user != null) {
-				user.release();
-			}
-			break;
+	  case "stop": {
+		UserSession user = users.remove(session.getId());
+		if (user != null) {
+		  user.release();
 		}
+		break;
+	  }
 
-		case "onIceCandidate": {
-			JsonObject candidate = jsonMessage.get("candidate").getAsJsonObject();
+	  case "onIceCandidate": {
+		JsonObject candidate = jsonMessage.get("candidate").getAsJsonObject();
 
-			UserSession user = users.get(session.getId());
-			if (user != null) {
-				IceCandidate cand = new IceCandidate(candidate.get("candidate").getAsString(),
-						candidate.get("sdpMid").getAsString(), candidate.get("sdpMLineIndex")
-								.getAsInt());
-				user.addCandidate(cand);
-			}
-			break;
+		UserSession user = users.get(session.getId());
+		if (user != null) {
+		  IceCandidate cand = new IceCandidate(candidate.get("candidate").getAsString(),
+		      candidate.get("sdpMid").getAsString(), candidate.get("sdpMLineIndex").getAsInt());
+		  user.addCandidate(cand);
 		}
+		break;
+	  }
 
-		default:
-			sendError(session, "Invalid message with id "
-					+ jsonMessage.get("id").getAsString());
-			break;
-		}
+	  default:
+		sendError(session, "Invalid message with id " + jsonMessage.get("id").getAsString());
+		break;
 	}
+  }
 
-	private void start(final WebSocketSession session, JsonObject jsonMessage) {
-		try {
-			// Media Logic (Media Pipeline and Elements)
-			UserSession user = new UserSession();
-			MediaPipeline pipeline = kurento.createMediaPipeline();
-			user.setMediaPipeline(pipeline);
-			WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline).build();
-			user.setWebRtcEndpoint(webRtcEndpoint);
-			users.put(session.getId(), user);
+  private void start(final WebSocketSession session, JsonObject jsonMessage) {
+	try {
+	  // Media Logic (Media Pipeline and Elements)
+	  UserSession user = new UserSession();
+	  MediaPipeline pipeline = kurento.createMediaPipeline();
+	  user.setMediaPipeline(pipeline);
+	  WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline).build();
+	  user.setWebRtcEndpoint(webRtcEndpoint);
+	  users.put(session.getId(), user);
 
-			webRtcEndpoint
-					.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
+	  webRtcEndpoint.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
 
-						@Override
-						public void onEvent(IceCandidateFoundEvent event) {
-							JsonObject response = new JsonObject();
-							response.addProperty("id", "iceCandidate");
-							response.add("candidate",
-									JsonUtils.toJsonObject(event.getCandidate()));
-							try {
-								synchronized (session) {
-									session.sendMessage(new TextMessage(response.toString()));
-								}
-							} catch (IOException e) {
-								log.debug(e.getMessage());
-							}
-						}
-					});
-
-			PlateDetectorFilter plateDetectorFilter = new PlateDetectorFilter.Builder(pipeline)
-					.build();
-
-			webRtcEndpoint.connect(plateDetectorFilter);
-			plateDetectorFilter.connect(webRtcEndpoint);
-
-			plateDetectorFilter
-					.addPlateDetectedListener(new EventListener<PlateDetectedEvent>() {
-						@Override
-						public void onEvent(PlateDetectedEvent event) {
-							final OrionConnectorConfiguration orionConnectorConfiguration = new OrionConnectorConfiguration();
-
-							JsonObject response = new JsonObject();
-							response.addProperty("id", "plateDetected");
-							response.addProperty("plate", event.getPlate());
-							try {
-								session.sendMessage(new TextMessage(response.toString()));
-
-								// Publish Vehicle Data Model in FIWARE
-
-								EventOrionPublisher<PlateDetectedEvent, VehicleDataModel> vehiclePublisher = new EventOrionPublisher<PlateDetectedEvent, VehicleDataModel>(
-										orionConnectorConfiguration) {
-
-									@Override
-									public VehicleDataModel mapEntityToOrionEntity(
-											final PlateDetectedEvent event) {
-										// Get info from the system about the
-										// car whose plate has been detected
-										VehicleDataModel vehicle = vehicleService
-												.getVehicleFromPlate(event.getPlate());
-
-										return vehicle;
-									}
-								};
-
-								try {
-									vehiclePublisher.publish(event);
-								} catch (OrionConnectorException e) {
-									log.warn("Could not publish event in ORION");
-								}
-
-								// Publish PlateDetectedEvent Data Model in
-								// FIWARE
-
-								PlateDetectorEventOrionPublisher plateDetectorEventPublisher = new PlateDetectorEventOrionPublisher(
-										orionConnectorConfiguration);
-
-								plateDetectorEventPublisher.publish(event);
-
-								// Publish MediaEvent Data Model in FIWARE
-
-								MediaEventOrionPublisher mediaEventPublisher = new MediaEventOrionPublisher(
-										orionConnectorConfiguration);
-
-								MediaEventDataModel mediaEventDataModel = mediaEventPublisher
-										.mapEntityToOrionEntity(event);
-
-								try {
-									mediaEventPublisher.publish(mediaEventDataModel);
-								} catch (OrionConnectorException e) {
-									log.warn("Could not publish event in ORION");
-								}
-
-							} catch (Throwable t) {
-								sendError(session, t.getMessage());
-							}
-						}
-					});
-
-			// SDP negotiation (offer and answer)
-			String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
-			String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
-
-			// Sending response back to client
-			JsonObject response = new JsonObject();
-			response.addProperty("id", "startResponse");
-			response.addProperty("sdpAnswer", sdpAnswer);
-
+		@Override
+		public void onEvent(IceCandidateFoundEvent event) {
+		  JsonObject response = new JsonObject();
+		  response.addProperty("id", "iceCandidate");
+		  response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
+		  try {
 			synchronized (session) {
-				session.sendMessage(new TextMessage(response.toString()));
+			  session.sendMessage(new TextMessage(response.toString()));
 			}
-			webRtcEndpoint.gatherCandidates();
-		} catch (Throwable t) {
-			sendError(session, t.getMessage());
+		  } catch (IOException e) {
+			log.debug(e.getMessage());
+		  }
 		}
-	}
+	  });
 
-	private void sendError(WebSocketSession session, String message) {
-		try {
-			JsonObject response = new JsonObject();
-			response.addProperty("id", "error");
-			response.addProperty("message", message);
+	  PlateDetectorFilter plateDetectorFilter = new PlateDetectorFilter.Builder(pipeline).build();
+
+	  webRtcEndpoint.connect(plateDetectorFilter);
+	  plateDetectorFilter.connect(webRtcEndpoint);
+
+	  plateDetectorFilter.addPlateDetectedListener(new EventListener<PlateDetectedEvent>() {
+		@Override
+		public void onEvent(PlateDetectedEvent event) {
+
+		  final OrionConnectorConfiguration orionConnectorConfiguration = new OrionConnectorConfiguration();
+
+		  final PlateDetectedEventPublisher plateDetectedEventPublisher = new PlateDetectedEventPublisher(
+		      orionConnectorConfiguration);
+
+		  DevicePlateDetectedEvent extendedEvent = new DevicePlateDetectedEvent(event, null);
+
+		  // TODO add the camera information (from {@link: CameraSession}
+
+		  JsonObject response = new JsonObject();
+		  response.addProperty("id", "plateDetected");
+		  response.addProperty("plate", event.getPlate());
+		  log.debug("plateDetectorFilter.onEvent({}) => {}", event.getPlate(), response.toString());
+		  try {
 			session.sendMessage(new TextMessage(response.toString()));
-		} catch (IOException e) {
-			log.error("Exception sending message", e);
+			plateDetectedEventPublisher.publish(extendedEvent);
+			log.debug("");
+		  } catch (OrionConnectorException e) {
+			log.warn("Could not publish event in ORION");
+			sendError(session, e.getMessage());
+		  } catch (Throwable t) {
+			log.warn("Thowable: {}", t.getLocalizedMessage());
+			sendError(session, t.getMessage());
+		  }
 		}
+	  });
+
+	  // SDP negotiation (offer and answer)
+	  String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
+	  String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
+
+	  // Sending response back to client
+	  JsonObject response = new JsonObject();
+	  response.addProperty("id", "startResponse");
+	  response.addProperty("sdpAnswer", sdpAnswer);
+
+	  synchronized (session) {
+		session.sendMessage(new TextMessage(response.toString()));
+	  }
+
+	  webRtcEndpoint.gatherCandidates();
+
+	} catch (Throwable t) {
+	  sendError(session, t.getMessage());
 	}
+  }
+
+  private void sendError(WebSocketSession session, String message) {
+	try {
+	  JsonObject response = new JsonObject();
+	  response.addProperty("id", "error");
+	  response.addProperty("message", message);
+	  session.sendMessage(new TextMessage(response.toString()));
+	} catch (IOException e) {
+	  log.error("Exception sending message", e);
+	}
+  }
 
 }

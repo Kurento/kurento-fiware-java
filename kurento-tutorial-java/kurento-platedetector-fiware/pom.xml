@@ -1,18 +1,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                        http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                        http://maven.apache.org/xsd/maven-4.0.0.xsd"
+>
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.kurento</groupId>
     <artifactId>kurento-parent-pom</artifactId>
-    <version>6.6.2</version>
+    <version>6.7.0</version>
   </parent>
 
   <groupId>org.kurento.tutorial</groupId>
   <artifactId>kurento-platedetector-fiware</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>2.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>Kurento Java Tutorial - Plate detector (FIWARE)</name>
@@ -21,6 +22,14 @@
   <properties>
     <demo.port>8443</demo.port>
     <start-class>org.kurento.tutorial.platedetector.Application</start-class>
+    <angular-version>1.7.0</angular-version>
+    <junit.jupiter.version>5.0.0</junit.jupiter.version>
+    <junit.platform.version>1.2.0</junit.platform.version>
+    <maven.surefire.version>2.22.0</maven.surefire.version>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <webjars.bootstrap.version>4.1.0</webjars.bootstrap.version>
+    <kurento.integration.version>2.0-SNAPSHOT</kurento.integration.version>
   </properties>
 
   <scm>
@@ -29,12 +38,10 @@
     <developerConnection>scm:git:git@github.com:Kurento/kurento-fiware-java.git</developerConnection>
   </scm>
 
-  <!-- Project dependencies.
-  <version> fields come inherited from <dependencyManagement>
-  in parent (kurento-parent-pom). -->
+  <!-- Project dependencies. <version> fields come inherited from <dependencyManagement> 
+    in parent (kurento-parent-pom). -->
   <dependencies>
-
-    <!-- Spring Boot -->
+    <!-- Spring -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
@@ -42,6 +49,33 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-websocket</artifactId>
+    </dependency>
+
+    <!-- WebJars -->
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>webjars-locator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.webjars.bower</groupId>
+      <artifactId>jquery</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.webjars.bower</groupId>
+      <artifactId>bootstrap</artifactId>
+      <version>${webjars.bootstrap.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.webjars.bower</groupId>
+      <artifactId>demo-console</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.webjars.bower</groupId>
+      <artifactId>ekko-lightbox</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.webjars.bower</groupId>
+      <artifactId>webrtc-adapter</artifactId>
     </dependency>
 
     <!-- Kurento -->
@@ -60,38 +94,32 @@
     <dependency>
       <groupId>org.kurento</groupId>
       <artifactId>kurento-fiware</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>${kurento.integration.version}</version>
     </dependency>
 
     <!-- JavaScript -->
-    <!--<dependency>
-      <groupId>org.scala-lang</groupId>
-      <artifactId>scala-library</artifactId>
-      <version>2.11.0</version>
-    </dependency>-->
+    <!-- angular -->
     <dependency>
       <groupId>org.webjars</groupId>
-      <artifactId>webjars-locator</artifactId>
+      <artifactId>angularjs</artifactId>
+      <version>${angular-version}</version>
     </dependency>
+
+
+
+    <!-- Tests -->
     <dependency>
-      <groupId>org.webjars.bower</groupId>
-      <artifactId>adapter.js</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
     </dependency>
+
     <dependency>
-      <groupId>org.webjars.bower</groupId>
-      <artifactId>bootstrap</artifactId>
-    </dependency>
-    <!-- <dependency>
-      <groupId>org.webjars.bower</groupId>
-      <artifactId>demo-console</artifactId>
-    </dependency> -->
-    <dependency>
-      <groupId>org.webjars.bower</groupId>
-      <artifactId>ekko-lightbox</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.webjars.bower</groupId>
-      <artifactId>jquery</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -119,6 +147,18 @@
         <configuration>
           <mainClass>${start-class}</mainClass>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven.surefire.version}</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-surefire-provider</artifactId>
+            <version>${junit.platform.version}</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Kurento (https://www.kurento.org)
+ * Copyright 2018 Kurento (https://www.kurento.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,41 +18,51 @@ package org.kurento.orion.connector;
 
 public class OrionConnectorConfiguration {
 
-	private String orionHost = "192.168.1.39";
-	private int orionPort = 1026;
-	private String orionScheme = "http";
-	private String fiwareService = "";
+  private String orionHost = "localhost";
+  private int orionPort = 1026;
+  private String orionScheme = "http";
+  private String fiwareService = "";
 
-	public String getOrionHost() {
-		return this.orionHost;
-	}
+  private int LIMIT = 1000;
 
-	public void setOrionHost(String orionHost) {
-		this.orionHost = orionHost;
-	}
+  public String getOrionHost() {
+	return this.orionHost;
+  }
 
-	public int getOrionPort() {
-		return this.orionPort;
-	}
+  public void setOrionHost(String orionHost) {
+	this.orionHost = orionHost;
+  }
 
-	public void setOrionPort(int orionPort) {
-		this.orionPort = orionPort;
-	}
+  public int getOrionPort() {
+	return this.orionPort;
+  }
 
-	public String getOrionScheme() {
-		return this.orionScheme;
-	}
+  public void setOrionPort(int orionPort) {
+	this.orionPort = orionPort;
+  }
 
-	public void setOrionScheme(String orionSchema) {
-		this.orionScheme = orionSchema;
-	}
+  public String getOrionScheme() {
+	return this.orionScheme;
+  }
 
-	public String getFiwareService() {
-		return fiwareService;
-	}
+  public void setOrionScheme(String orionSchema) {
+	this.orionScheme = orionSchema;
+  }
 
-	public void setFiwareService(String fiwareService) {
-		this.fiwareService = fiwareService;
-	}
+  public String getFiwareService() {
+	return fiwareService;
+  }
+
+  public void setFiwareService(String fiwareService) {
+	this.fiwareService = fiwareService;
+  }
+
+  public void setQueryLimit(int limit) {
+	this.LIMIT = limit;
+  }
+
+  public int getQueryLimit() {
+	return LIMIT;
+  }
 
 }
